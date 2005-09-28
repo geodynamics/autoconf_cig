@@ -8,34 +8,66 @@
 AC_DEFUN([CIT_PATH_PYTHIA], [
 # $Id$
 AC_REQUIRE([AM_PATH_PYTHON])
-AC_ARG_VAR(PYTHIA_VERSION, [Pythia version, e.g. 0.8-mpi to override Pythia tests])
+# undocumented configure arg --with-pythia=[auto|prepackaged|VERSION|VERSION-SUBPACKAGES]
+if test "${with_pythia+set}" = set; then
+    case "$with_pythia" in
+        yes | no) want_pythia="auto" ;;
+        auto | prepackaged | *.*) want_pythia="$with_pythia" ;;
+        * ) want_pythia="auto" ;;
+    esac
+else
+    want_pythia="auto"
+fi
 AC_MSG_CHECKING([for Pythia v$1])
-if test -n "$PYTHIA_VERSION"; then
+if test "$want_pythia" = "prepackaged"; then
+    if test -d $srcdir/pythia-$1; then
+        AC_MSG_RESULT([(prepackaged) yes])
+        MAYBE_PYTHIA=pythia-$1
+        # Override these tests in any subpackages.
+        if test -n "$2"; then
+            pythia_version=$1-`echo $2 | sed 's/ /-/g'`
+        else
+            pythia_version="$1"
+        fi
+        ac_configure_args="$ac_configure_args --with-pythia=$pythia_version"
+        # Find Pythia headers and libraries in the build directory.
+        pythia_builddir=`pwd`/pythia-$1
+        pythia_pkgdir=$pythia_builddir/packages
+        CPPFLAGS="-I$pythia_builddir/include $CPPFLAGS"; export CPPFLAGS
+        LDFLAGS="-L$pythia_pkgdir/journal/libjournal -L$pythia_pkgdir/mpi $LDFLAGS"; export LDFLAGS
+        AC_SUBST([PYTHIA_MPIPYTHON], ["\${bindir}/mpipython.exe"])
+        $3
+    else
+        AC_MSG_RESULT(no)
+        m4_default([$4], [AC_MSG_ERROR([prepackaged Pythia not found])])
+        :
+    fi
+elif test "$want_pythia" != "auto"; then
     # Override the tests.
-    pythia_version=`echo $PYTHIA_VERSION | sed 's/-/ /' | sed 's/ .*//'`
-    pythia_subpackages=,`echo $PYTHIA_VERSION | sed 's/-/ /' | sed 's/^.* //' | sed 's/-/,/g'`,
+    pythia_version=`echo $want_pythia | sed 's/-/ /' | sed 's/ .*//'`
+    pythia_subpackages=,`echo $want_pythia | sed 's/-/ /' | sed 's/^.* //' | sed 's/-/,/g'`,
     if test "$pythia_version" = $1; then
-        AC_MSG_RESULT([(overridden) yes])
+        AC_MSG_RESULT([(prepackaged) yes])
         pythia_found="yes"
         for pythia_subpackage in $2; do
             AC_MSG_CHECKING([for subpackage '$pythia_subpackage' in Pythia])
             if test `echo $pythia_subpackages | grep ,$pythia_subpackage,`; then
-                AC_MSG_RESULT([(overridden) yes])
+                AC_MSG_RESULT([(prepackaged) yes])
             else
-                AC_MSG_RESULT([(overridden) no])
+                AC_MSG_RESULT([(prepackaged) no])
                 pythia_found="no"
             fi
         done
         if test "$pythia_found" = "yes"; then
+            AC_SUBST([PYTHIA_MPIPYTHON], ["\${bindir}/mpipython.exe"])
             $3
-            :
         else
-            m4_default([$4], [AC_MSG_ERROR([required Pythia subpackages not found; check PYTHIA_VERSION])])
+            m4_default([$4], [AC_MSG_ERROR([prepackaged Pythia is unsuitable; need subpackages: $2])])
             :
         fi
     else
-        AC_MSG_RESULT([(overridden) no])
-        m4_default([$4], [AC_MSG_ERROR([no suitable Pythia package found; check PYTHIA_VERSION])])
+        AC_MSG_RESULT([(prepackaged) no])
+        m4_default([$4], [AC_MSG_ERROR([prepackaged Pythia v$pythia_version is unsuitable; need v$1])])
     fi
 else
     # It is common practice to create a 'pyre' project subdirectory, which
@@ -79,11 +111,31 @@ else
             else
                 AC_MSG_RESULT(no)
             fi
+            AC_MSG_CHECKING([Pythia bin directory])
+            test -d empty || mkdir empty
+            [pythia_bindir=`cd empty && $PYTHON -c "from pyre.config import makefile; print makefile['bindir']" 2>/dev/null`]
+            rmdir empty
+            if test -d "$pythia_bindir"; then
+                AC_MSG_RESULT([$pythia_bindir])
+            else
+                AC_MSG_RESULT(no)
+            fi
             AC_CHECK_LIB(journal, firewall_hit, [
                 AC_LANG_PUSH(C++)
                 AC_CHECK_HEADER([journal/diagnostics.h], [
-                    $3
-                    :
+                    AC_MSG_CHECKING([for Pythia program 'mpipython.exe'])
+                    if test -n "$pythia_bindir" && test -x "$pythia_bindir/mpipython.exe"; then
+                        AC_SUBST([PYTHIA_MPIPYTHON], ["$pythia_bindir/mpipython.exe"])
+                    else
+                        AC_PATH_PROG([PYTHIA_MPIPYTHON], [mpipython.exe], [none])
+                        if test "$PYTHIA_MPIPYTHON" != "none"; then
+                            $3
+                            :
+                        else
+                            m4_default([$4], [AC_MSG_ERROR([Pythia program 'mpipython.exe' not found])])
+                            :
+                        fi
+                    fi
                 ], [
                     m4_default([$4], [AC_MSG_ERROR([Pythia headers not found; try CPPFLAGS="-I<pythia-$1 include dir>"])])
                     :
@@ -94,7 +146,7 @@ else
                 :
             ])
         else
-            m4_default([$4], [AC_MSG_ERROR([required Pythia subpackages not found])])
+            m4_default([$4], [AC_MSG_ERROR([required Pythia subpackages not found: $2])])
             :
         fi
     else
@@ -105,20 +157,21 @@ else
             MAYBE_PYTHIA=pythia-$1
             # Override the above tests in any subpackages.
             if test -n "$2"; then
-                PYTHIA_VERSION=$1-`echo $2 | sed 's/ /-/g'`
+                pythia_version=$1-`echo $2 | sed 's/ /-/g'`
             else
-                PYTHIA_VERSION="$1"
+                pythia_version="$1"
             fi
-            export PYTHIA_VERSION
+            ac_configure_args="$ac_configure_args --with-pythia=$pythia_version"
             # Find Pythia headers and libraries in the build directory.
             pythia_builddir=`pwd`/pythia-$1
             pythia_pkgdir=$pythia_builddir/packages
             CPPFLAGS="-I$pythia_builddir/include $CPPFLAGS"; export CPPFLAGS
             LDFLAGS="-L$pythia_pkgdir/journal/libjournal -L$pythia_pkgdir/mpi $LDFLAGS"; export LDFLAGS
+            AC_SUBST([PYTHIA_MPIPYTHON], ["\${bindir}/mpipython.exe"])
             $3
         else
             AC_MSG_RESULT(no)
-            m4_default([$4], [AC_MSG_ERROR([no suitable Pythia package found])])
+            m4_default([$4], [AC_MSG_ERROR([no suitable Pythia package found; check PYTHONPATH])])
         fi
     fi
 fi

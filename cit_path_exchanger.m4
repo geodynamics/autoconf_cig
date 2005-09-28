@@ -4,17 +4,40 @@
 AC_DEFUN([CIT_PATH_EXCHANGER], [
 # $Id$
 AC_REQUIRE([AM_PATH_PYTHON])
-AC_ARG_VAR(EXCHANGER_VERSION, [Exchanger version, e.g. $1 to override Exchanger tests])
+# undocumented configure arg --with-exchanger=[auto|prepackaged|VERSION]
+if test "${with_exchanger+set}" = set; then
+    case "$with_exchanger" in
+        yes | no) want_exchanger="auto" ;;
+        auto | prepackaged | *.*) want_exchanger="$with_exchanger" ;;
+        * ) want_exchanger="auto" ;;
+    esac
+else
+    want_exchanger="auto"
+fi
 AC_MSG_CHECKING([for Exchanger with version ~ $1])
-if test -n "$EXCHANGER_VERSION"; then
-    # Override the tests.
-    exchanger_version=$EXCHANGER_VERSION
-    if test "$exchanger_version" = $1; then
-        AC_MSG_RESULT([(overridden) yes])
+if test "$want_exchanger" = "prepackaged"; then
+    if test -d $srcdir/Exchanger; then
+        AC_MSG_RESULT([(prepackaged) yes])
+        MAYBE_EXCHANGER=Exchanger
+        # Override these tests in any subpackages.
+        ac_configure_args="$ac_configure_args --with-exchanger=$1"
+        exchanger_builddir=`pwd`/Exchanger
+        CPPFLAGS="-I$exchanger_builddir/include $CPPFLAGS"; export CPPFLAGS
+        LDFLAGS="-L$exchanger_builddir $LDFLAGS"; export LDFLAGS
         $2
     else
-        AC_MSG_RESULT([(overridden) no])
-        m4_default([$3], [AC_MSG_ERROR([no suitable Exchanger package found; check EXCHANGER_VERSION])])
+        AC_MSG_RESULT(no)
+        m4_default([$3], [AC_MSG_ERROR([prepackaged Exchanger not found])])
+    fi
+elif test "$want_exchanger" != "auto"; then
+    # Override the tests.
+    exchanger_version=$want_exchanger
+    if test "$exchanger_version" = $1; then
+        AC_MSG_RESULT([(prepackaged) yes])
+        $2
+    else
+        AC_MSG_RESULT([(prepackaged) no])
+        m4_default([$3], [AC_MSG_ERROR([prepackaged Exchanger v$exchanger_version is unsuitable; need v$1])])
     fi
 else
     test -d empty || mkdir empty
@@ -26,7 +49,7 @@ else
        test -n "$exchanger_version_minor" &&
        test "$exchanger_version_major" -eq "$exchanger_1_major" &&
        test "$exchanger_version_minor" -ge "$exchanger_1_minor"; then
-        AC_MSG_RESULT(yes)
+        AC_MSG_RESULT([yes ($exchanger_version)])
         AC_MSG_CHECKING([Exchanger include directory])
         test -d empty || mkdir empty
         [exchanger_includedir=`cd empty && $PYTHON -c "from Exchanger.config import makefile; print makefile['includedir']" 2>/dev/null`]
@@ -66,13 +89,14 @@ dnl [AC_MSG_ERROR([Exchanger libraries not found; try LDFLAGS="-L<Exchanger lib 
             AC_MSG_RESULT(yes)
             MAYBE_EXCHANGER=Exchanger
             # Override the above tests in any subpackages.
-            EXCHANGER_VERSION=$1; export EXCHANGER_VERSION
+            ac_configure_args="$ac_configure_args --with-exchanger=$1"
             exchanger_builddir=`pwd`/Exchanger
             CPPFLAGS="-I$exchanger_builddir/include $CPPFLAGS"; export CPPFLAGS
             LDFLAGS="-L$exchanger_builddir $LDFLAGS"; export LDFLAGS
+            $2
         else
             AC_MSG_RESULT(no)
-            m4_default([$3], [AC_MSG_ERROR([no suitable Exchanger package found])])
+            m4_default([$3], [AC_MSG_ERROR([no suitable Exchanger package found; check PYTHONPATH])])
         fi
     fi
 fi
