@@ -35,17 +35,16 @@ AC_TRY_COMPILE([
             test -z "$cit_mpicmd" && cit_mpicmd=$cit_MPICC
         ]
     )
-    cit_includes=
     if test -n "$cit_mpicmd"; then
         # Try to guess the correct value for MPIINCLUDES using an MPI wrapper.
         AC_MSG_CHECKING([for the includes used by $cit_mpicmd])
+        cit_includes=
         for cit_arg_show in "-show" "-showme" "-echo" "-compile_info"
         do
             cit_cmd="$cit_mpicmd -c $cit_arg_show"
             if $cit_cmd >/dev/null 2>&1; then
                 cit_args=`$cit_cmd 2>/dev/null`
                 test -z "$cit_args" && continue
-                cit_includes=
                 for cit_arg in $cit_args
                 do
                     case $cit_arg in
@@ -53,35 +52,42 @@ AC_TRY_COMPILE([
                     esac
                 done
                 test -z "$cit_includes" && continue
-                AC_MSG_RESULT([$cit_includes])
-                AC_MSG_CHECKING([for mpi.h])
-                CPPFLAGS="$cit_includes $CPPFLAGS"
-                AC_TRY_COMPILE([
-#include <mpi.h>
-                ], [], [
-                    AC_MSG_RESULT(yes)
-                    MPIINCLUDES=$cit_includes
-                    export MPIINCLUDES
-                ], [
-                    AC_MSG_RESULT(no)
-                ])
                 break
             fi
         done
-        if test -z "$cit_includes"; then
+        if test -n "$cit_includes"; then
+            AC_MSG_RESULT([$cit_includes])
+            AC_MSG_CHECKING([for mpi.h])
+            CPPFLAGS="$cit_includes $CPPFLAGS"
+            AC_TRY_COMPILE([
+#include <mpi.h>
+            ], [], [
+                AC_MSG_RESULT(yes)
+                MPIINCLUDES=$cit_includes
+                export MPIINCLUDES
+            ], [
+                AC_MSG_RESULT(no)
+                _CIT_HEADER_MPI_FAILED
+            ])
+        else
             AC_MSG_RESULT(failed)
+            _CIT_HEADER_MPI_FAILED
         fi
-    fi
-    if test -z "$cit_includes"; then
-        AC_MSG_ERROR([header <mpi.h> not found
-
-    Set the MPICC, MPICXX, MPIINCLUDES, and MPILIBS environment variables
-    to specify how to build MPI programs.
-])
+    else
+        _CIT_HEADER_MPI_FAILED
     fi
 ])
 CPPFLAGS=$cit_save_CPPFLAGS
 CXX=$cit_save_CXX
 CC=$cit_save_CC
 ])dnl CIT_HEADER_MPI
+
+AC_DEFUN([_CIT_HEADER_MPI_FAILED], [
+AC_MSG_ERROR([header <mpi.h> not found
+
+    Set the MPICC, MPICXX, MPIINCLUDES, and MPILIBS environment variables
+    to specify how to build MPI programs.
+])
+])dnl CIT_HEADER_MPI_FAILED
+
 dnl end of file
