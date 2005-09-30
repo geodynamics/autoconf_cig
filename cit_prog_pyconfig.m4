@@ -9,8 +9,8 @@ PYCONFIG='$(top_builddir)/pyconfig'
 AC_SUBST(PYCONFIG)
 ofile=pyconfig
 cfgfile="${ofile}T"
-trap "$rm \"$cfgfile\"; exit 1" 1 2 15
-$rm -f "$cfgfile"
+trap "rm \"$cfgfile\"; exit 1" 1 2 15
+rm -f "$cfgfile"
 AC_MSG_NOTICE([creating $ofile])
 cat >"$cfgfile" <<END_OF_PYTHON
 [#!/usr/bin/env python

@@ -7,7 +7,8 @@
 # comment about the MPI library, below).  Make sure that CC and
 # MPICC both represent the same underlying C compiler.
 AC_DEFUN([CIT_PROG_MPICC], [
-# $Id$
+AC_PROVIDE([_CIT_PROG_MPICC])dnl
+AC_REQUIRE([_CIT_PROG_MPICC_SEARCH_LIST])dnl
 AC_BEFORE([$0], [AC_PROG_CC])
 AC_ARG_VAR(MPICC, [MPI C compiler command])
 AC_SUBST([MPICC])
@@ -19,7 +20,6 @@ test -z "$want_mpi" && want_mpi=yes
 #       (cc cl ecc gcc icc pgcc xlc xlc_r)
 # Newer names are tried first (e.g., icc before ecc).
 cit_compiler_search_list="gcc cc cl icc ecc pgcc xlc xlc_r"
-cit_mpicc_search_list="mpicc hcc mpcc mpcc_r mpxlc cmpicc"
 # There are two C command variables, so there are four cases to
 # consider:
 #
@@ -47,8 +47,6 @@ if test "$want_mpi" = yes; then
             # CC=??? MPICC=mpicc
             cit_MPICC=$MPICC
             CC=$MPICC # will be reevaluated below
-            test x = x"$MPILIBS" && MPILIBS=" "
-            test x = x"$MPIINCLUDES" && MPIINCLUDES=" "
         else
             # CC=??? MPICC=???
             cit_compiler_search_list="$cit_mpicc_search_list $cit_compiler_search_list"
@@ -64,8 +62,6 @@ if test "$want_mpi" = yes; then
         case $MPICC in
             *mp* | hcc)
                 cit_MPICC=$MPICC
-                test x = x"$MPILIBS" && MPILIBS=" "
-                test x = x"$MPIINCLUDES" && MPIINCLUDES=" "
                 ;;
         esac
     fi
@@ -104,4 +100,22 @@ if test "$want_mpi" = yes; then
     fi
 fi
 ])dnl CIT_PROG_MPICC
+
+# _CIT_PROG_MPICC
+# ---------------
+# Search for an MPI C wrapper. ~ This private macro is employed by
+# C++-only projects (via CIT_CHECK_LIB_MPI and CIT_HEADER_MPI).  It
+# handles the case where an MPI C wrapper is present, but an MPI C++
+# wrapper is missing or broken.  This can happen if a C++ compiler was
+# not found/specified when MPI was installed.
+AC_DEFUN([_CIT_PROG_MPICC], [
+AC_REQUIRE([_CIT_PROG_MPICC_SEARCH_LIST])dnl
+AC_CHECK_PROGS(cit_MPICC, $cit_mpicc_search_list)
+])dnl _CIT_PROG_MPICC
+
+AC_DEFUN([_CIT_PROG_MPICC_SEARCH_LIST], [
+# $Id$
+cit_mpicc_search_list="mpicc hcc mpcc mpcc_r mpxlc cmpicc"
+])dnl _CIT_PROG_MPICC_SEARCH_LIST
+
 dnl end of file

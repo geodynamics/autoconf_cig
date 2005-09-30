@@ -50,8 +50,6 @@ if test "$want_mpi" = yes; then
             # CXX=??? MPICXX=mpicxx
             cit_MPICXX=$MPICXX
             CXX=$MPICXX # will be reevaluated below
-            test x = x"$MPILIBS" && MPILIBS=" "
-            test x = x"$MPIINCLUDES" && MPIINCLUDES=" "
         else
             # CXX=??? MPICXX=???
             cit_compiler_search_list="$cit_mpicxx_search_list $cit_compiler_search_list"
@@ -67,8 +65,6 @@ if test "$want_mpi" = yes; then
         case $MPICXX in
             *mp* | hcp)
                 cit_MPICXX=$MPICXX
-                test x = x"$MPILIBS" && MPILIBS=" "
-                test x = x"$MPIINCLUDES" && MPIINCLUDES=" "
                 ;;
         esac
     fi
