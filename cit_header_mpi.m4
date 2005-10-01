@@ -58,7 +58,7 @@ AC_TRY_COMPILE([
         if test -n "$cit_includes"; then
             AC_MSG_RESULT([$cit_includes])
             AC_MSG_CHECKING([for mpi.h])
-            CPPFLAGS="$cit_includes $CPPFLAGS"
+            CPPFLAGS="$cit_includes $cit_save_CPPFLAGS"
             AC_TRY_COMPILE([
 #include <mpi.h>
             ], [], [
@@ -77,6 +77,39 @@ AC_TRY_COMPILE([
         _CIT_HEADER_MPI_FAILED
     fi
 ])
+# If the current language is C++, verify that the MPI library is
+# link-compatible with CXX (which could be different than the C++
+# compiler used to build the MPI library).  If there is a problem,
+# attempt to work-around it by preventing MPI's C++ bindings from
+# being #included.
+AC_LANG_CASE([C++], [
+    AC_MSG_CHECKING([whether we can link a trivial C++ MPI program])
+    cit_save_LIBS=$LIBS
+    LIBS="$MPILIBS $LIBS"
+    CPPFLAGS="$MPIINCLUDES $cit_save_CPPFLAGS"
+    AC_LINK_IFELSE([_CIT_TRIVIAL_MPI_PROGRAM], [AC_MSG_RESULT(yes)], [
+        AC_MSG_RESULT(no)
+        cit_status="broken"
+        for cit_arg in "-DMPICH_SKIP_MPICXX" "-UHAVE_MPI_CPP" "-DLAM_WANT_MPI2CPP=0" "-DLAM_BUILDING=1" "-DOMPI_WANT_CXX_BINDINGS=0" "-DOMPI_BUILDING=1"
+        do
+            CPPFLAGS="$cit_arg $MPIINCLUDES $cit_save_CPPFLAGS"
+            AC_MSG_CHECKING([whether we can link a trivial C++ MPI program with $cit_arg])
+            AC_LINK_IFELSE([_CIT_TRIVIAL_MPI_PROGRAM], [
+                AC_MSG_RESULT(yes)
+                MPIINCLUDES="$cit_arg $MPIINCLUDES"
+                export MPIINCLUDES
+                cit_status="fixed"
+                break
+            ], [
+                AC_MSG_RESULT(no)
+            ])
+        done
+        if test "$cit_status" = "broken"; then
+            AC_MSG_FAILURE([cannot link a trivial C++ MPI program using $CXX])
+        fi
+    ])
+    LIBS=$cit_save_LIBS
+])
 CPPFLAGS=$cit_save_CPPFLAGS
 CXX=$cit_save_CXX
 CC=$cit_save_CC
@@ -89,5 +122,14 @@ AC_MSG_ERROR([header <mpi.h> not found
     to specify how to build MPI programs.
 ])
 ])dnl CIT_HEADER_MPI_FAILED
+
+AC_DEFUN([_CIT_TRIVIAL_MPI_PROGRAM], [
+AC_LANG_PROGRAM([[
+#include <mpi.h>
+]], [[
+    MPI_Init(0,0);
+    MPI_Finalize();
+]])
+])dnl _CIT_TRIVIAL_MPI_PROGRAM
 
 dnl end of file
