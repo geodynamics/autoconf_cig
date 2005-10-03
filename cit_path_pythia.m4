@@ -123,12 +123,19 @@ else
             AC_CHECK_LIB(journal, firewall_hit, [
                 AC_LANG_PUSH(C++)
                 AC_CHECK_HEADER([journal/diagnostics.h], [
-                    AC_MSG_CHECKING([for Pythia program 'mpipython.exe'])
-                    if test -n "$pythia_bindir" && test -x "$pythia_bindir/mpipython.exe"; then
-                        AC_SUBST([PYTHIA_MPIPYTHON], ["$pythia_bindir/mpipython.exe"])
+                    if test -n "$pythia_bindir"; then
+                        AC_MSG_CHECKING([for mpipython.exe])
+                        if test -x "$pythia_bindir/mpipython.exe"; then
+                            AC_SUBST([PYTHIA_MPIPYTHON], ["$pythia_bindir/mpipython.exe"])
+                            AC_MSG_RESULT([$PYTHIA_MPIPYTHON])
+                            $3
+                        else
+                            AC_MSG_RESULT(no)
+                            m4_default([$4], [AC_MSG_ERROR([Pythia program 'mpipython.exe' not found])])
+                        fi
                     else
-                        AC_PATH_PROG([PYTHIA_MPIPYTHON], [mpipython.exe], [none])
-                        if test "$PYTHIA_MPIPYTHON" != "none"; then
+                        AC_PATH_PROG([PYTHIA_MPIPYTHON], [mpipython.exe], [no])
+                        if test "$PYTHIA_MPIPYTHON" != "no"; then
                             $3
                             :
                         else
