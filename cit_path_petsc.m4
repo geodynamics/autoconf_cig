@@ -17,13 +17,22 @@ elif test ! -d "$PETSC_DIR/include"; then
     m4_default([$3], [AC_MSG_ERROR([PETSc include dir $PETSC_DIR/include not found; check PETSC_DIR])])
 elif test ! -f "$PETSC_DIR/include/petscversion.h"; then
     m4_default([$3], [AC_MSG_ERROR([PETSc header file $PETSC_DIR/include/petscversion.h not found; check PETSC_DIR])])
-elif test -z "$PETSC_ARCH" && test ! -x "$PETSC_DIR/bin/configarch"; then
-    m4_default([$3], [AC_MSG_ERROR([PETSc file $PETSC_DIR/bin/configarch not found; check PETSC_DIR])])
+elif test -z "$PETSC_ARCH" && test ! -f "$PETSC_DIR/bmake/petscconf"; then
+    m4_default([$3], [AC_MSG_ERROR([PETSc file $PETSC_DIR/bmake/petscconf not found; check PETSC_DIR])])
 else
     AC_MSG_RESULT([$PETSC_DIR])
     AC_MSG_CHECKING([for PETSc arch])
     if test -z "$PETSC_ARCH"; then
-        PETSC_ARCH=`$PETSC_DIR/bin/configarch`
+        cat >petsc.py <<END_OF_PYTHON
+[from distutils.sysconfig import parse_makefile
+
+vars = parse_makefile('$PETSC_DIR/bmake/petscconf')
+print 'PETSC_ARCH="%s"' % vars['PETSC_ARCH']
+
+]
+END_OF_PYTHON
+        eval `$PYTHON petsc.py 2>/dev/null`
+        rm -f petsc.py
     fi
     AC_MSG_RESULT([$PETSC_ARCH])
     if test ! -d "$PETSC_DIR/bmake/$PETSC_ARCH"; then
@@ -50,10 +59,8 @@ keys = (
     'PETSC_VERSION_SUBMINOR',
 
     'PETSC_INCLUDE',
-    'PETSC_LIB_DIR',
-    'PETSC_LIB_BASIC',
-    'PETSC_FORTRAN_LIB_BASIC',
-    'PETSC_EXTERNAL_LIB_BASIC',
+    'PETSC_LIB',
+    'PETSC_FORTRAN_LIB',
 
     'FC',
 )
@@ -66,8 +73,11 @@ for key in keys:
 
 ]
 END_OF_PYTHON
-        eval `$PYTHON petsc.py 2>/dev/null`
-        rm -f petsc.py petscconf
+        AS_IF([AC_TRY_COMMAND([$PYTHON petsc.py >conftest.sh 2>&AS_MESSAGE_LOG_FD])],
+              [],
+              [AC_MSG_FAILURE([cannot parse PETSc configuration])])
+        eval `cat conftest.sh`
+        rm -f conftest.sh petsc.py petscconf
 
         [eval `echo $1 | sed 's/\([^.]*\)[.]\([^.]*\).*/petsc_1_major=\1; petsc_1_minor=\2;/'`]
         if test -z "$PETSC_VERSION_MAJOR" -o -z "$PETSC_VERSION_MINOR"; then
@@ -87,10 +97,8 @@ AC_SUBST([PETSC_VERSION_MAJOR])
 AC_SUBST([PETSC_VERSION_MINOR])
 AC_SUBST([PETSC_VERSION_SUBMINOR])
 AC_SUBST([PETSC_INCLUDE])
-AC_SUBST([PETSC_LIB_DIR])
-AC_SUBST([PETSC_LIB_BASIC])
-AC_SUBST([PETSC_FORTRAN_LIB_BASIC])
-AC_SUBST([PETSC_EXTERNAL_LIB_BASIC])
+AC_SUBST([PETSC_LIB])
+AC_SUBST([PETSC_FORTRAN_LIB])
 AC_SUBST([PETSC_FC])
 ])dnl CIT_PATH_PETSC
 dnl end of file
