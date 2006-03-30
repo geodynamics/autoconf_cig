@@ -18,6 +18,12 @@ if test "${with_pythia+set}" = set; then
 else
     want_pythia="auto"
 fi
+pythia_mpi="no"
+for pythia_subpackage in $2; do
+    if test "$pythia_subpackage" = "mpi"; then
+        pythia_mpi="yes"
+    fi
+done
 AC_MSG_CHECKING([for Pythia v$1])
 if test "$want_pythia" = "prepackaged"; then
     if test -d $srcdir/pythia-$1; then
@@ -35,7 +41,9 @@ if test "$want_pythia" = "prepackaged"; then
         pythia_pkgdir=$pythia_builddir/packages
         CPPFLAGS="-I$pythia_builddir/include $CPPFLAGS"; export CPPFLAGS
         LDFLAGS="-L$pythia_pkgdir/journal/libjournal -L$pythia_pkgdir/mpi $LDFLAGS"; export LDFLAGS
-        AC_SUBST([PYTHIA_MPIPYTHON], ["\${bindir}/mpipython.exe"])
+        if test "$pythia_mpi" = "yes"; then
+            AC_SUBST([PYTHIA_MPIPYTHON], ["\${bindir}/mpipython.exe"])
+        fi
         $3
     else
         AC_MSG_RESULT(no)
@@ -59,7 +67,9 @@ elif test "$want_pythia" != "auto"; then
             fi
         done
         if test "$pythia_found" = "yes"; then
-            AC_SUBST([PYTHIA_MPIPYTHON], ["\${bindir}/mpipython.exe"])
+            if test "$pythia_mpi" = "yes"; then
+                AC_SUBST([PYTHIA_MPIPYTHON], ["\${bindir}/mpipython.exe"])
+            fi
             $3
         else
             m4_default([$4], [AC_MSG_ERROR([prepackaged Pythia is unsuitable; need subpackages: $2])])
@@ -123,7 +133,9 @@ else
             AC_CHECK_LIB(journal, firewall_hit, [
                 AC_LANG_PUSH(C++)
                 AC_CHECK_HEADER([journal/diagnostics.h], [
-                    if test -n "$pythia_bindir"; then
+                    if test "$pythia_mpi" = "no"; then
+                        :
+                    elif test -n "$pythia_bindir"; then
                         AC_MSG_CHECKING([for mpipython.exe])
                         if test -x "$pythia_bindir/mpipython.exe"; then
                             AC_SUBST([PYTHIA_MPIPYTHON], ["$pythia_bindir/mpipython.exe"])
@@ -174,7 +186,9 @@ else
             pythia_pkgdir=$pythia_builddir/packages
             CPPFLAGS="-I$pythia_builddir/include $CPPFLAGS"; export CPPFLAGS
             LDFLAGS="-L$pythia_pkgdir/journal/libjournal -L$pythia_pkgdir/mpi $LDFLAGS"; export LDFLAGS
-            AC_SUBST([PYTHIA_MPIPYTHON], ["\${bindir}/mpipython.exe"])
+            if test "$pythia_mpi" = "yes"; then
+                AC_SUBST([PYTHIA_MPIPYTHON], ["\${bindir}/mpipython.exe"])
+            fi
             $3
         else
             AC_MSG_RESULT(no)
