@@ -19,7 +19,7 @@ else
     want_pythia="auto"
 fi
 pythia_mpi="no"
-for pythia_subpackage in $2; do
+for pythia_subpackage in "$2"; do
     if test "$pythia_subpackage" = "mpi"; then
         pythia_mpi="yes"
     fi
@@ -57,7 +57,7 @@ elif test "$want_pythia" != "auto"; then
     if test "$pythia_version" = $1; then
         AC_MSG_RESULT([(prepackaged) yes])
         pythia_found="yes"
-        for pythia_subpackage in $2; do
+        for pythia_subpackage in "$2"; do
             AC_MSG_CHECKING([for subpackage '$pythia_subpackage' in Pythia])
             if test `echo $pythia_subpackages | grep ,$pythia_subpackage,`; then
                 AC_MSG_RESULT([(prepackaged) yes])
@@ -88,7 +88,7 @@ else
     if test "$pythia_version" = $1; then
         AC_MSG_RESULT(yes)
         pythia_found="yes"
-        for pythia_subpackage in $2; do
+        for pythia_subpackage in "$2"; do
             AC_MSG_CHECKING([for subpackage '$pythia_subpackage' in Pythia])
             test -d empty || mkdir empty
             pythia_subversion=`cd empty && $PYTHON -c "import $pythia_subpackage; print $pythia_subpackage.__version__" 2>/dev/null`
