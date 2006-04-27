@@ -409,7 +409,7 @@ CIT_MPI_CXX_LINK_IFELSE(cit_arg, $$1, $2, $3,
     else
 	AC_MSG_RESULT([yes, with $cit_arg])
     fi
-    $1="$cit_arg $$1"
+    $1="$cit_arg [$]$1"
     $5
 ], [
     AC_MSG_RESULT(no)
@@ -484,15 +484,15 @@ do
 	for cit_arg in $cit_args
 	do
 	    case $cit_arg in
-		-L* | -l* | -pthread*) $1="$$1 $cit_arg" ;;
+		-L* | -l* | -pthread* [)] $1="[$]$1 $cit_arg" ;;
 	    esac
 	done
-	test -z "$$1" && continue
+	test -z "[$]$1" && continue
 	break
     fi
 done
-if test -n "$$1"; then
-    AC_MSG_RESULT([$$1])
+if test -n "[$]$1"; then
+    AC_MSG_RESULT([[$]$1])
     $3
 else
     AC_MSG_RESULT(failed)
@@ -518,15 +518,15 @@ do
 	for cit_arg in $cit_args
 	do
 	    case $cit_arg in
-		-I*) $1="$$1 $cit_arg" ;;
+		-I* [)] $1="[$]$1 $cit_arg" ;;
 	    esac
 	done
-	test -z "$$1" && continue
+	test -z "[$]$1" && continue
 	break
     fi
 done
-if test -n "$$1"; then
-    AC_MSG_RESULT([$$1])
+if test -n "[$]$1"; then
+    AC_MSG_RESULT([[$]$1])
     $3
 else
     AC_MSG_RESULT(failed)

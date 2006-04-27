@@ -128,7 +128,7 @@ cit_petsc_save_CC=$CC
 cit_petsc_save_LIBS=$LIBS
 CC=$PETSC_CC
 LIBS="$PETSC_LIB $LIBS"
-AC_CHECK_FUNC(PetscInitialize, [], [
+_CIT_LINK_PETSC_IFELSE([], [
     AC_LANG_CASE(
         [C++], [],
         _CIT_CHECK_LIB_PETSC_FAILED
@@ -151,7 +151,7 @@ AC_CHECK_FUNC(PetscInitialize, [], [
     CIT_MPI_LIBS(cit_libs, $PETSC_CC, [
 	LIBS="$PETSC_LIB $cit_libs $cit_petsc_save_LIBS"
 	unset ac_cv_func_PetscInitialize
-	AC_CHECK_FUNC(PetscInitialize, [
+	_CIT_LINK_PETSC_IFELSE([
 	    PETSC_CXX_LIB=$cit_libs
 	], [
 	    _CIT_CHECK_LIB_PETSC_FAILED
@@ -170,6 +170,43 @@ CC=$cit_petsc_save_CC
 AC_DEFUN([_CIT_CHECK_LIB_PETSC_FAILED], [
 AC_MSG_ERROR([cannot link against PETSc libraries])
 ])dnl _CIT_CHECK_LIB_PETSC_FAILED
+
+
+# _CIT_LINK_PETSC_IFELSE([ACTION-IF-FOUND], [ACTION-IF-NOT-FOUND])
+# ----------------------------------------------------------------
+AC_DEFUN([_CIT_LINK_PETSC_IFELSE], [
+# PetscInitialize() might have C++ linkage.  If the current language
+# is C++, allow for this possibility.
+AC_LANG_CASE(
+    [C++], [
+        AC_MSG_CHECKING([for PetscInitialize])
+        AC_LINK_IFELSE(_CIT_CHECK_LIB_PETSC_PROGRAM([]), [
+                AC_MSG_RESULT([yes (C++)])
+                $1
+        ], [
+            AC_LINK_IFELSE(_CIT_CHECK_LIB_PETSC_PROGRAM([extern "C"]), [
+                AC_MSG_RESULT([yes (C)])
+                $1
+            ], [
+                AC_MSG_RESULT(no)
+                $2
+            ])
+        ])
+    ],
+    [AC_CHECK_FUNC(PetscInitialize, [$1], [$2])]
+)
+])dnl _CIT_LINK_PETSC_IFELSE
+
+
+# _CIT_CHECK_LIB_PETSC_PROGRAM
+# ----------------------------
+AC_DEFUN([_CIT_CHECK_LIB_PETSC_PROGRAM], [
+AC_LANG_PROGRAM([[
+$1 int PetscInitialize(int *, char ***,const char *,const char *);
+]], [[
+    PetscInitialize(0, 0, 0, "checklib");
+]])
+])dnl _CIT_CHECK_LIB_PETSC_PROGRAM
 
 
 # CIT_HEADER_PETSC
@@ -254,6 +291,31 @@ AC_LANG_PROGRAM([[
     PetscFinalize();
 ]])
 ])dnl _CIT_TRIVIAL_PETSC_PROGRAM
+
+
+# CIT_PETSC_SIEVE
+# ---------------
+AC_DEFUN([CIT_PETSC_SIEVE], [
+AC_MSG_CHECKING([for PETSc/Sieve])
+AC_LANG_PUSH(C++)
+cit_petsc_save_LIBS=$LIBS
+cit_petsc_save_CPPFLAGS=$CPPFLAGS
+LIBS="$PETSC_LIB $PETSC_CXX_LIB $LIBS"
+CPPFLAGS="$PETSC_INCLUDE $PETSC_CXX_INCLUDE $CPPFLAGS"
+AC_LINK_IFELSE(AC_LANG_PROGRAM([[
+#include <petscmesh.h>
+]], [[
+    ALE::Sieve *topology;
+]]), [
+    AC_MSG_RESULT(yes)
+], [
+    AC_MSG_RESULT(no)
+    AC_MSG_FAILURE([cannot build a trivial C++ PETSc program which uses ALE::Sieve])
+])
+CPPFLAGS=$cit_petsc_save_CPPFLAGS
+LIBS=$cit_petsc_save_LIBS
+AC_LANG_POP(C++)
+])dnl CIT_PETSC_SIEVE
 
 
 dnl end of file
