@@ -72,6 +72,8 @@ keys = (
 
     'CC',
     'FC',
+
+    'SIEVE_FLAGS',
 )
 
 for key in keys:
@@ -110,6 +112,7 @@ AC_SUBST([PETSC_LIB])
 AC_SUBST([PETSC_FORTRAN_LIB])
 AC_SUBST([PETSC_CC])
 AC_SUBST([PETSC_FC])
+AC_SUBST([PETSC_SIEVE_FLAGS])
 ])dnl CIT_PATH_PETSC
 
 
@@ -293,9 +296,9 @@ AC_LANG_PROGRAM([[
 ])dnl _CIT_TRIVIAL_PETSC_PROGRAM
 
 
-# CIT_PETSC_SIEVE
-# ---------------
-AC_DEFUN([CIT_PETSC_SIEVE], [
+# CIT_CHECK_LIB_PETSC_SIEVE
+# -------------------------
+AC_DEFUN([CIT_CHECK_LIB_PETSC_SIEVE], [
 AC_MSG_CHECKING([for PETSc/Sieve])
 AC_LANG_PUSH(C++)
 cit_petsc_save_LIBS=$LIBS
@@ -305,7 +308,8 @@ CPPFLAGS="$PETSC_INCLUDE $PETSC_CXX_INCLUDE $CPPFLAGS"
 AC_LINK_IFELSE(AC_LANG_PROGRAM([[
 #include <petscmesh.h>
 ]], [[
-    ALE::Sieve *topology;
+    const int dim = 3;
+    ALE::Mesh mesh(PETSC_COMM_WORLD, dim);
 ]]), [
     AC_MSG_RESULT(yes)
 ], [
@@ -315,7 +319,7 @@ AC_LINK_IFELSE(AC_LANG_PROGRAM([[
 CPPFLAGS=$cit_petsc_save_CPPFLAGS
 LIBS=$cit_petsc_save_LIBS
 AC_LANG_POP(C++)
-])dnl CIT_PETSC_SIEVE
+])dnl CIT_CHECK_LIB_PETSC_SIEVE
 
 
 dnl end of file
