@@ -27,8 +27,12 @@ if vars['LDLIBRARY'] == vars['LIBRARY']:
     # "On systems without shared libraries, LDLIBRARY is the same as LIBRARY"
     vars['BLDLIBRARY'] = "-L%(LIBPL)s -lpython%(VERSION)s" % vars
 elif vars['BLDLIBRARY']:
-    # "On Mac OS X frameworks, BLDLIBRARY is blank"
     vars['BLDLIBRARY'] = "-L%(LIBDIR)s -lpython%(VERSION)s" % vars
+else:
+    # "On Mac OS X frameworks, BLDLIBRARY is blank"
+    # See also Issue39.
+    framework = "%(PYTHONFRAMEWORKDIR)s/Versions/%(VERSION)s/%(PYTHONFRAMEWORK)s" % vars
+    vars['LINKFORSHARED'] = vars['LINKFORSHARED'].replace(framework, "-framework " + vars.get('PYTHONFRAMEWORK', 'Python'))
 for key in keys:
     print 'PYTHON_%s="%s"' % (key, vars.get(key, ''))
 ]
