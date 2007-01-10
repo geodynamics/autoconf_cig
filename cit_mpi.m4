@@ -459,6 +459,7 @@ LIBS=$cit_mpi_cxx_link_save_LIBS
 # ------------------------
 AC_DEFUN([_CIT_TRIVIAL_MPI_PROGRAM], [
 AC_LANG_PROGRAM([[
+#include <stdio.h>
 #include <mpi.h>
 ]], [[
     MPI_Init(0,0);
