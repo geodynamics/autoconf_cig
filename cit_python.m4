@@ -10,7 +10,7 @@
 # -----------------
 # Determine the directory containing <Python.h> using distutils.
 AC_DEFUN([CIT_PYTHON_INCDIR], [
-# $Id: cit_python_incdir.m4 2367 2005-09-09 16:46:52Z leif $
+# $Id$
 AC_REQUIRE([AM_PATH_PYTHON])
 AC_CACHE_CHECK([for $am_display_PYTHON include directory],
     [PYTHON_INCDIR],
@@ -23,7 +23,7 @@ AC_SUBST([PYTHON_INCDIR], [$PYTHON_INCDIR])
 # CIT_PYTHON_SYSCONFIG
 # --------------------
 AC_DEFUN([CIT_PYTHON_SYSCONFIG], [
-# $Id: cit_python_sysconfig.m4 5301 2006-11-16 12:59:42Z leif $
+# $Id$
 AC_REQUIRE([AM_PATH_PYTHON])
 AC_MSG_CHECKING([$am_display_PYTHON sysconfig])
 cat >sysconfig.py <<END_OF_PYTHON
@@ -87,7 +87,7 @@ AC_SUBST([PYTHON_SYSLIBS], [$PYTHON_SYSLIBS])
 # CIT_PYTHON_SITE
 # ---------------
 AC_DEFUN([CIT_PYTHON_SITE], [
-# $Id: cit_python_site.m4 2659 2006-04-01 01:41:01Z leif $
+# $Id$
 AC_REQUIRE([AM_PATH_PYTHON])
 AC_MSG_CHECKING([whether we are installing to Python's prefix])
 cit_python_prefix=`$PYTHON -c "import sys; print sys.prefix"`
@@ -124,7 +124,7 @@ AM_CONDITIONAL([COND_PYEXEC_SITE], [$cit_cond_pyexec_site])
 # ACTION-IF-NOT-FOUND.
 
 AC_DEFUN([CIT_CHECK_PYTHON_EGG], [
-# $Id: cit_python_eggs.m4 4616 2006-09-25 23:41:07Z leif $
+# $Id$
 
 AC_MSG_CHECKING([for "$1"])
 
@@ -172,7 +172,7 @@ fi
 # Loosely inspired by PKG_CHECK_MODULES.  See pkg-config(1).
 
 AC_DEFUN([CIT_PYTHON_EGG_FLAGS], [
-# $Id: cit_python_eggs.m4 4616 2006-09-25 23:41:07Z leif $
+# $Id$
 
 AC_MSG_CHECKING([for egg-related flags])
 
@@ -244,7 +244,7 @@ AC_SUBST(PYTHON_EGG_LDFLAGS)
 # to 'requires.txt'.
 
 AC_DEFUN([CIT_PYTHON_EGG_REQUIRES], [
-# $Id: cit_python_eggs.m4 4616 2006-09-25 23:41:07Z leif $
+# $Id$
 
 ofile=requires.txt
 requiresfile="${ofile}T"
@@ -269,13 +269,56 @@ AC_SUBST([pythonegginfodir], [\${pythoneggdir}/EGG-INFO])
 ])dnl CIT_PYTHON_EGG_REQUIRES
 
 
+# CIT_PYTHON_EGG_SETUP
+# --------------------
+
+AC_DEFUN([CIT_PYTHON_EGG_SETUP], [
+# $Id$
+AC_REQUIRE([AM_PATH_PYTHON])
+
+cit_builddir=`pwd`
+cit_save_PYTHONPATH="$PYTHONPATH"
+PYTHONPATH="$cit_builddir/python:$PYTHONPATH"; export PYTHONPATH
+cd $srcdir
+
+AC_MSG_NOTICE([downloading missing Python dependencies])
+AS_IF([AC_TRY_COMMAND([$PYTHON setup.py install_deps -zmxd $cit_builddir/deps >&AS_MESSAGE_LOG_FD 2>&AS_MESSAGE_LOG_FD])],
+      [],
+      [AC_MSG_FAILURE([cannot download missing Python dependencies])])
+
+AC_MSG_NOTICE([building Python dependencies])
+AS_IF([AC_TRY_COMMAND([$PYTHON setup.py develop -H None -f $cit_builddir/deps -x -d $cit_builddir/python >&AS_MESSAGE_LOG_FD 2>&AS_MESSAGE_LOG_FD])],
+      [],
+      [AC_MSG_FAILURE([building Python dependencies])])
+
+AC_MSG_CHECKING([for egg-related flags])
+AS_IF([AC_TRY_COMMAND([$PYTHON setup.py egg_flags >&AS_MESSAGE_LOG_FD 2>&AS_MESSAGE_LOG_FD])],
+      [AC_MSG_RESULT(ok)
+       . egg-flags.sh
+       rm -f egg-flags.sh
+      ],
+      [AC_MSG_RESULT(failed)
+      AC_MSG_FAILURE([cannot scan Python eggs for flags])])
+
+cd $cit_builddir
+PYTHONPATH="$cit_save_PYTHONPATH"
+PYTHONPATH="${pythondir}:${pyexecdir}${cit_save_PYTHONPATH:+:${cit_save_PYTHONPATH}}"
+
+AC_SUBST(PYTHONPATH)
+AC_SUBST(PYTHON_EGG_CFLAGS)
+AC_SUBST(PYTHON_EGG_CPPFLAGS)
+AC_SUBST(PYTHON_EGG_LDFLAGS)
+
+])dnl CIT_PYTHON_EGG_SETUP
+
+
 # CIT_PROG_PYCONFIG
 # -----------------
 # Provide a simple Python script which generates a Python module to
 # expose our package configuration, similar to Python's
 # distutils.sysconfig.
 AC_DEFUN([CIT_PROG_PYCONFIG], [
-# $Id: cit_prog_pyconfig.m4 2659 2006-04-01 01:41:01Z leif $
+# $Id$
 PYCONFIG='$(top_builddir)/pyconfig'
 AC_SUBST(PYCONFIG)
 ofile=pyconfig
