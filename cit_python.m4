@@ -27,8 +27,14 @@ AC_DEFUN([CIT_PYTHON_SYSCONFIG], [
 AC_REQUIRE([AM_PATH_PYTHON])
 AC_MSG_CHECKING([$am_display_PYTHON sysconfig])
 cat >sysconfig.py <<END_OF_PYTHON
-[from distutils import sysconfig
-print 'PYTHON_INCDIR="%s"' % sysconfig.get_python_inc()
+[import os, sys
+from distutils import sysconfig
+def cygpath(wpath):
+    s = os.popen('cygpath -u "%s"' % wpath)
+    path = s.read().strip()
+    s.close()
+    return path
+incdir = sysconfig.get_python_inc()
 keys = (
     'BLDLIBRARY',
     'LDFLAGS',
@@ -42,19 +48,36 @@ keys = (
     'MODLIBS',
     'SYSLIBS',
 )
-vars = sysconfig.get_config_vars()
-# transform AIX's python.exp
-vars['LINKFORSHARED'] = vars['LINKFORSHARED'].replace('Modules',vars['LIBPL'])
-if vars['LDLIBRARY'] == vars['LIBRARY']:
-    # "On systems without shared libraries, LDLIBRARY is the same as LIBRARY"
-    vars['BLDLIBRARY'] = "-L%(LIBPL)s -lpython%(VERSION)s" % vars
-elif vars['BLDLIBRARY']:
-    vars['BLDLIBRARY'] = "-L%(LIBDIR)s -lpython%(VERSION)s" % vars
+if os.name == "nt":
+    # We are running under Python for Windows (the real one...
+    # not Cygwin Python, under which 'os.name' is 'posix').
+    # We assume that we are still in the Cygwin POSIX environment,
+    # however (this is 'configure', after all); so we convert
+    # all Windows pathnames to POSIX pathnames using 'cygpath'.
+    incdir = cygpath(incdir)
+    vars = {}
+    libs = os.path.join(sys.prefix, "libs")
+    libs = cygpath(libs)
+    version = sysconfig.get_python_version()
+    version = version.replace('.', '')
+    vars['BLDLIBRARY'] = "-L%s -lpython%s" % (libs, version)
 else:
-    # "On Mac OS X frameworks, BLDLIBRARY is blank"
-    # See also Issue39.
-    framework = "%(PYTHONFRAMEWORKDIR)s/Versions/%(VERSION)s/%(PYTHONFRAMEWORK)s" % vars
-    vars['LINKFORSHARED'] = vars['LINKFORSHARED'].replace(framework, "-framework " + vars.get('PYTHONFRAMEWORK', 'Python'))
+    vars = sysconfig.get_config_vars()
+    # transform AIX's python.exp
+    vars['LINKFORSHARED'] = vars['LINKFORSHARED'].replace('Modules',vars['LIBPL'])
+    if vars['LDLIBRARY'] == vars['LIBRARY']:
+        # "On systems without shared libraries, LDLIBRARY is the same as LIBRARY"
+        vars['BLDLIBRARY'] = "-L%(LIBPL)s -lpython%(VERSION)s" % vars
+    elif vars['BLDLIBRARY']:
+        # LIBDIR is usually enough... except on Cygwin, where libpython is
+        # nested inside Python's 'config' directory (Issue39).
+        vars['BLDLIBRARY'] = "-L%(LIBDIR)s -L%(LIBPL)s -lpython%(VERSION)s" % vars
+    else:
+        # "On Mac OS X frameworks, BLDLIBRARY is blank"
+        # See also Issue39.
+        framework = "%(PYTHONFRAMEWORKDIR)s/Versions/%(VERSION)s/%(PYTHONFRAMEWORK)s" % vars
+        vars['LINKFORSHARED'] = vars['LINKFORSHARED'].replace(framework, "-framework " + vars.get('PYTHONFRAMEWORK', 'Python'))
+print 'PYTHON_INCDIR="%s"' % incdir
 for key in keys:
     print 'PYTHON_%s="%s"' % (key, vars.get(key, ''))
 ]
