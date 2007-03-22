@@ -305,7 +305,7 @@ PYTHONPATH="$cit_builddir/python:$PYTHONPATH"; export PYTHONPATH
 cd $srcdir
 
 AC_MSG_NOTICE([downloading missing Python dependencies])
-AS_IF([AC_TRY_COMMAND([$PYTHON setup.py install_deps -zmxd $cit_builddir/deps >&AS_MESSAGE_LOG_FD 2>&AS_MESSAGE_LOG_FD])],
+AS_IF([AC_TRY_COMMAND([$PYTHON setup.py install_deps -f $cit_builddir/deps -zmxd $cit_builddir/deps >&AS_MESSAGE_LOG_FD 2>&AS_MESSAGE_LOG_FD])],
       [],
       [AC_MSG_FAILURE([cannot download missing Python dependencies])])
 
