@@ -11,9 +11,11 @@
 # Check for the PETSc package.  Requires Python.
 AC_DEFUN([CIT_PATH_PETSC], [
 # $Id$
+
 AC_REQUIRE([AM_PATH_PYTHON])
 AC_ARG_VAR(PETSC_DIR, [location of PETSc installation])
 AC_ARG_VAR(PETSC_ARCH, [PETSc configuration])
+
 AC_MSG_CHECKING([for PETSc dir])
 if test -z "$PETSC_DIR"; then
     AC_MSG_RESULT(no)
@@ -22,15 +24,29 @@ elif test ! -d "$PETSC_DIR"; then
     AC_MSG_RESULT(no)
     m4_default([$3], [AC_MSG_ERROR([PETSc not found; PETSC_DIR=$PETSC_DIR is invalid])])
 elif test ! -d "$PETSC_DIR/include"; then
+    AC_MSG_RESULT(broken)
     m4_default([$3], [AC_MSG_ERROR([PETSc include dir $PETSC_DIR/include not found; check PETSC_DIR])])
 elif test ! -f "$PETSC_DIR/include/petscversion.h"; then
+    AC_MSG_RESULT(broken)
     m4_default([$3], [AC_MSG_ERROR([PETSc header file $PETSC_DIR/include/petscversion.h not found; check PETSC_DIR])])
-elif test -z "$PETSC_ARCH" && test ! -f "$PETSC_DIR/bmake/petscconf"; then
-    m4_default([$3], [AC_MSG_ERROR([PETSc file $PETSC_DIR/bmake/petscconf not found; check PETSC_DIR])])
-else
-    AC_MSG_RESULT([$PETSC_DIR])
-    AC_MSG_CHECKING([for PETSc arch])
-    if test -z "$PETSC_ARCH"; then
+fi
+AC_MSG_RESULT([$PETSC_DIR])
+
+# In what follows, we consistenly check for the new config layout
+# first, in case the user is using an old HG working copy with junk in
+# it.
+
+AC_MSG_CHECKING([for PETSc arch])
+if test -z "$PETSC_ARCH"; then
+    if test -d "$PETSC_DIR/conf"; then
+        # new config layout; no default config (?)
+        AC_MSG_RESULT(no)
+        m4_default([$3], [AC_MSG_ERROR([set PETSC_ARCH])])
+    elif test ! -f "$PETSC_DIR/bmake/petscconf"; then
+        # old config layout (2.3.3 and earlier)
+        AC_MSG_RESULT(error)
+        m4_default([$3], [AC_MSG_ERROR([PETSc file $PETSC_DIR/bmake/petscconf not found; check PETSC_DIR])])
+    else
         cat >petsc.py <<END_OF_PYTHON
 [from distutils.sysconfig import parse_makefile
 
@@ -42,17 +58,37 @@ END_OF_PYTHON
         eval `$PYTHON petsc.py 2>/dev/null`
         rm -f petsc.py
     fi
-    AC_MSG_RESULT([$PETSC_ARCH])
-    if test ! -d "$PETSC_DIR/bmake/$PETSC_ARCH"; then
-        m4_default([$3], [AC_MSG_ERROR([PETSc config dir $PETSC_DIR/bmake/$PETSC_ARCH not found; check PETSC_ARCH])])
-    elif test ! -f "$PETSC_DIR/bmake/$PETSC_ARCH/petscconf"; then
-        m4_default([$3], [AC_MSG_ERROR([PETSc config file $PETSC_DIR/bmake/$PETSC_ARCH/petscconf not found; check PETSC_ARCH])])
-    else
-        AC_MSG_CHECKING([for PETSc version == $1])
-        echo "PETSC_DIR = $PETSC_DIR" > petscconf
-        echo "PETSC_ARCH = $PETSC_ARCH" >> petscconf
-        cat $PETSC_DIR/bmake/$PETSC_ARCH/petscconf $PETSC_DIR/bmake/common/variables >> petscconf
-        cat >petsc.py <<END_OF_PYTHON
+fi
+AC_MSG_RESULT([$PETSC_ARCH])
+
+AC_MSG_CHECKING([for PETSc config])
+if test -d "$PETSC_DIR/$PETSC_ARCH"; then
+    # new config layout
+    cit_petsc_petscconf="$PETSC_DIR/$PETSC_ARCH/conf/petscconf"
+    cit_petsc_variables="$PETSC_DIR/conf/variables"
+elif test -d "$PETSC_DIR/bmake/$PETSC_ARCH"; then
+    # old config layout
+    cit_petsc_petscconf="$PETSC_DIR/bmake/$PETSC_ARCH/petscconf"
+    cit_petsc_variables="$PETSC_DIR/bmake/common/variables"
+else
+    AC_MSG_RESULT(no)
+    m4_default([$3], [AC_MSG_ERROR([PETSc config dir not found; check PETSC_ARCH])])
+fi
+if test ! -f "$cit_petsc_petscconf"; then
+    AC_MSG_RESULT(no)
+    m4_default([$3], [AC_MSG_ERROR([PETSc config file $cit_petsc_petscconf not found; check PETSC_ARCH])])
+fi
+if test ! -f "$cit_petsc_variables"; then
+    AC_MSG_RESULT(error)
+    m4_default([$3], [AC_MSG_ERROR([PETSc config file $cit_petsc_variables not found; check PETSC_DIR])])
+fi
+AC_MSG_RESULT([$cit_petsc_petscconf])
+
+AC_MSG_CHECKING([for PETSc version == $1])
+echo "PETSC_DIR = $PETSC_DIR" > petscconf
+echo "PETSC_ARCH = $PETSC_ARCH" >> petscconf
+cat "$cit_petsc_petscconf" "$cit_petsc_variables" >> petscconf
+cat >petsc.py <<END_OF_PYTHON
 [from distutils.sysconfig import parse_config_h, parse_makefile, expand_makefile_vars
 
 f = open('$PETSC_DIR/include/petscversion.h')
@@ -82,32 +118,33 @@ keys = (
 
 for key in keys:
     if key[:6] == 'PETSC_':
-        print '%s="%s"' % (key, expand_makefile_vars(str(vars[key]), vars))
+        print '%s="%s"' % (key, expand_makefile_vars(str(vars.get(key, '')), vars))
     else:
-        print 'PETSC_%s="%s"' % (key, expand_makefile_vars(str(vars[key]), vars))
+        print 'PETSC_%s="%s"' % (key, expand_makefile_vars(str(vars.get(key, '')), vars))
 
 ]
 END_OF_PYTHON
-        AS_IF([AC_TRY_COMMAND([$PYTHON petsc.py >conftest.sh 2>&AS_MESSAGE_LOG_FD])],
-              [],
-              [AC_MSG_FAILURE([cannot parse PETSc configuration])])
-        eval `cat conftest.sh`
-        rm -f conftest.sh petsc.py petscconf
+AS_IF([AC_TRY_COMMAND([$PYTHON petsc.py >conftest.sh 2>&AS_MESSAGE_LOG_FD])],
+      [],
+      [AC_MSG_RESULT(error)
+       AC_MSG_FAILURE([cannot parse PETSc configuration])])
+eval `cat conftest.sh`
+rm -f conftest.sh petsc.py petscconf
 
-        [eval `echo $1 | sed 's/\([^.]*\)[.]\([^.]*\).*/petsc_1_major=\1; petsc_1_minor=\2;/'`]
-        if test -z "$PETSC_VERSION_MAJOR" -o -z "$PETSC_VERSION_MINOR"; then
-            AC_MSG_RESULT(no)
-            m4_default([$3], [AC_MSG_ERROR([no suitable PETSc package found])])
-        elif test "$PETSC_VERSION_MAJOR" -eq "$petsc_1_major" -a \
-                  "$PETSC_VERSION_MINOR" -eq "$petsc_1_minor" ; then
-            AC_MSG_RESULT([yes ($PETSC_VERSION_MAJOR.$PETSC_VERSION_MINOR.$PETSC_VERSION_SUBMINOR)])
-            $2
-        else
-            AC_MSG_RESULT([no ($PETSC_VERSION_MAJOR.$PETSC_VERSION_MINOR.$PETSC_VERSION_SUBMINOR)])
-            m4_default([$3], [AC_MSG_ERROR([no suitable PETSc package found])])
-        fi
-    fi
+[eval `echo $1 | sed 's/\([^.]*\)[.]\([^.]*\)[.]\([^.]*\).*/petsc_1_major=\1; petsc_1_minor=\2; petsc_1_subminor=\3;/'`]
+if test -z "$PETSC_VERSION_MAJOR" -o -z "$PETSC_VERSION_MINOR" -o -z "$PETSC_VERSION_SUBMINOR"; then
+    AC_MSG_RESULT(no)
+    m4_default([$3], [AC_MSG_ERROR([no suitable PETSc package found])])
+elif test "$PETSC_VERSION_MAJOR" -eq "$petsc_1_major" -a \
+          "$PETSC_VERSION_MINOR" -eq "$petsc_1_minor" -a \
+          "$PETSC_VERSION_SUBMINOR" -eq "$petsc_1_subminor" ; then
+    AC_MSG_RESULT(yes)
+    $2
+else
+    AC_MSG_RESULT([no ($PETSC_VERSION_MAJOR.$PETSC_VERSION_MINOR.$PETSC_VERSION_SUBMINOR)])
+    m4_default([$3], [AC_MSG_ERROR([no suitable PETSc package found])])
 fi
+
 AC_SUBST([PETSC_VERSION_MAJOR])
 AC_SUBST([PETSC_VERSION_MINOR])
 AC_SUBST([PETSC_VERSION_SUBMINOR])
