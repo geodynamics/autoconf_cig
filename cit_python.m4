@@ -69,9 +69,26 @@ else:
         # "On systems without shared libraries, LDLIBRARY is the same as LIBRARY"
         vars['BLDLIBRARY'] = "-L%(LIBPL)s -lpython%(VERSION)s" % vars
     elif vars['BLDLIBRARY']:
-        # LIBDIR is usually enough... except on Cygwin, where libpython is
-        # nested inside Python's 'config' directory (Issue39).
-        vars['BLDLIBRARY'] = "-L%(LIBDIR)s -L%(LIBPL)s -lpython%(VERSION)s" % vars
+        #     The 'mpicc' wrapper for LAM/MPI isn't very smart about "-L"
+        # options.  Adding "-L/usr/lib" can cause "-lmpi" to be found in /usr/lib
+        # instead of LAM's 'lib' directory.  Of course, avoiding "-L/usr/lib"
+        # doesn't really fix the problem, but it does make it much less likely;
+        # and "-L/usr/lib" is redundant and potentially problematic anyway.
+        #     Python 2.4 and later puts a symlink to libpython.so in LIBPL
+        # (/usr/lib/python2.x/config), which makes adding "-L$LIBDIR"
+        # (in addition to "-L$LIBPL") completely redundant.
+        #     But we still support Python 2.3, and we prefer shared to static,
+        # so we still add "-L$LIBDIR" when Python is installed in a non-standard
+        # location.  Note that the linker will still prefer shared over static
+        # with only "-L/usr/lib/python2.3/config" on the link line.
+        libdir = ""
+        if vars['LIBDIR'] != "/usr/lib":
+            libdir = "-L%(LIBDIR)s "
+        # Important: on Cygwin, the import library for libpython.dll is
+        # nested inside Python's 'config' directory (see Issue39).  This means
+        # that the linker always needs help finding "-lpython2.x" (in the form
+        # of "-L$LIBPL"), even for the "system" Python installed under /usr.
+        vars['BLDLIBRARY'] = (libdir + "-L%(LIBPL)s -lpython%(VERSION)s") % vars
     else:
         # "On Mac OS X frameworks, BLDLIBRARY is blank"
         # See also Issue39.
