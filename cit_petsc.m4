@@ -118,7 +118,12 @@ keys = (
 
 for key in keys:
     if key[:6] == 'PETSC_':
-        print '%s="%s"' % (key, expand_makefile_vars(str(vars.get(key, '')), vars))
+        value = expand_makefile_vars(str(vars.get(key, '')), vars)
+        if key == 'PETSC_LIB':
+            # Libtool strips the former.  (Does it ever work?)
+            value = value.replace("/System/Library/Frameworks/vecLib.framework/vecLib",
+                                  "-Wl,-framework,vecLib")
+        print '%s="%s"' % (key, value)
     else:
         print 'PETSC_%s="%s"' % (key, expand_makefile_vars(str(vars.get(key, '')), vars))
 
