@@ -96,7 +96,7 @@ else:
         framework = "%(PYTHONFRAMEWORKDIR)s/Versions/%(VERSION)s/%(PYTHONFRAMEWORK)s" % vars
         PYTHONFRAMEWORK = vars.get('PYTHONFRAMEWORK', 'Python')
         vars['LINKFORSHARED'] = vars['LINKFORSHARED'].replace(framework, "-framework " + PYTHONFRAMEWORK)
-        vars['PYTHON_LA_LDFLAGS'] = "-Wl,-framework,%s" % PYTHONFRAMEWORK
+        vars['LA_LDFLAGS'] = "-Wl,-framework,%s" % PYTHONFRAMEWORK
 print 'PYTHON_INCDIR="%s"' % incdir
 for key in keys:
     print 'PYTHON_%s="%s"' % (key, vars.get(key, ''))
