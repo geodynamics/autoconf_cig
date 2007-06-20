@@ -94,8 +94,8 @@ else:
         # "On Mac OS X frameworks, BLDLIBRARY is blank"
         # See also Issue39.
         framework = "%(PYTHONFRAMEWORKDIR)s/Versions/%(VERSION)s/%(PYTHONFRAMEWORK)s" % vars
-        PYTHONFRAMEWORK = vars.get('PYTHONFRAMEWORK', 'Python'))
-        vars['LINKFORSHARED'] = vars['LINKFORSHARED'].replace(framework, "-framework " + PYTHONFRAMEWORK
+        PYTHONFRAMEWORK = vars.get('PYTHONFRAMEWORK', 'Python')
+        vars['LINKFORSHARED'] = vars['LINKFORSHARED'].replace(framework, "-framework " + PYTHONFRAMEWORK)
         vars['PYTHON_LA_LDFLAGS'] = "-Wl,-framework,%s" % PYTHONFRAMEWORK
 print 'PYTHON_INCDIR="%s"' % incdir
 for key in keys:
