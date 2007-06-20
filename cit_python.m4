@@ -47,6 +47,7 @@ keys = (
     'LINKFORSHARED',
     'MODLIBS',
     'SYSLIBS',
+    'LA_LDFLAGS',
 )
 if os.name == "nt":
     # We are running under Python for Windows (the real one...
@@ -93,7 +94,9 @@ else:
         # "On Mac OS X frameworks, BLDLIBRARY is blank"
         # See also Issue39.
         framework = "%(PYTHONFRAMEWORKDIR)s/Versions/%(VERSION)s/%(PYTHONFRAMEWORK)s" % vars
-        vars['LINKFORSHARED'] = vars['LINKFORSHARED'].replace(framework, "-framework " + vars.get('PYTHONFRAMEWORK', 'Python'))
+        PYTHONFRAMEWORK = vars.get('PYTHONFRAMEWORK', 'Python'))
+        vars['LINKFORSHARED'] = vars['LINKFORSHARED'].replace(framework, "-framework " + PYTHONFRAMEWORK
+        vars['PYTHON_LA_LDFLAGS'] = "-Wl,-framework,%s" % PYTHONFRAMEWORK
 print 'PYTHON_INCDIR="%s"' % incdir
 for key in keys:
     print 'PYTHON_%s="%s"' % (key, vars.get(key, ''))
@@ -121,6 +124,7 @@ AC_SUBST([PYTHON_LIBS], [$PYTHON_LIBS])
 AC_SUBST([PYTHON_LINKFORSHARED], [$PYTHON_LINKFORSHARED])
 AC_SUBST([PYTHON_MODLIBS], [$PYTHON_MODLIBS])
 AC_SUBST([PYTHON_SYSLIBS], [$PYTHON_SYSLIBS])
+AC_SUBST([PYTHON_LA_LDFLAGS], [$PYTHON_LA_LDFLAGS])
 ])dnl CIT_PYTHON_SYSCONFIG
 
 
