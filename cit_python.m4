@@ -97,6 +97,7 @@ else:
         PYTHONFRAMEWORK = vars.get('PYTHONFRAMEWORK', 'Python')
         vars['LINKFORSHARED'] = vars['LINKFORSHARED'].replace(framework, "-framework " + PYTHONFRAMEWORK)
         vars['LA_LDFLAGS'] = "-Wl,-framework,%s" % PYTHONFRAMEWORK
+vars['LDFLAGS'] = '' # only causes trouble (e.g., "-arch i386 -arch ppc" on Mac) -- see issue97
 print 'PYTHON_INCDIR="%s"' % incdir
 for key in keys:
     print 'PYTHON_%s="%s"' % (key, vars.get(key, ''))
