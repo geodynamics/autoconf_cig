@@ -72,4 +72,40 @@ AC_DEFUN([CIGMA_PATH_HDF5],[
 
 ])
 
+
+##############################################################################
+#
+# CIGMA_PARALLEL_HDF5(if-parallel, if-not)
+#
+AC_DEFUN([CIGMA_PARALLEL_HDF5],[
+    cigma_save_CPPFLAGS=$CPPFLAGS
+    cigma_save_LDFLAGS=$LDFLAGS
+    cigma_save_LIBS=$LIBS
+    CPPFLAGS="$HDF5_INCLUDES $cigma_save_CPPFLAGS"
+    LDFLAGS="$HDF5_LDFLAGS $cigma_save_LDFLAGS"
+    LIBS="$HDF5_LIBS $cigma_save_LIBS"
+    AC_MSG_CHECKING([for parallel HDF5])
+    AC_COMPILE_IFELSE([
+        AC_LANG_PROGRAM([[
+            #include <hdf5.h>
+            ]], [[
+            #ifdef H5_HAVE_PARALLEL
+                return 0;
+            #else
+            #error serial
+                return 1;
+            #endif
+            ]])
+        ],
+        [AC_MSG_RESULT([yes])
+         CPPFLAGS="$cit_MPI_CPPFLAGS $cigma_save_CPPFLAGS"
+         $1],
+        [AC_MSG_RESULT([no])
+         CPPFLAGS="$cigma_save_CPPFLAGS"
+         $2
+        ])
+    LDFLAGS=$cigma_save_LDFLAGS
+    LIBS=$cigma_save_LIBS
+])
+
 # vim: syntax=config
