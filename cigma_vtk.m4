@@ -67,13 +67,15 @@ AC_DEFUN([AM_PATH_VTK],[
             AC_MSG_RESULT([yes])
 
             dnl these are the VTK libraries of a default build
-            VTK_LIBS="-lvtkCommon -lvtkIO -lvtkFiltering"
+            dnl vtkCommon, vtkIO, vtkFiltering, plus dependencies (in case VTK libs are static)
+            dnl order is significant
+            VTK_LIBS="-lvtkIO -lvtkDICOMParser -lvtkFiltering -lvtkCommon -lvtktiff -lvtkpng -lvtkjpeg -lvtkzlib -lvtkexpat -lvtksys"
 
             dnl set VTK c,cpp,ld flags
             VTK_CFLAGS="-I$VTK_PREFIX/include/vtk$vtk_suffix"
             VTK_CXXFLAGS="$VTK_CFLAGS"
             VTK_INCLUDES="-I$VTK_PREFIX/include/vtk$vtk_suffix"
-            VTK_LDFLAGS="-L$VTK_PREFIX/lib/vtk$vtk_suffix -L$VTK_PREFIX/lib64/vtk$vtk_suffix $VTK_LIBS"
+            VTK_LDFLAGS="-L$VTK_PREFIX/lib/vtk$vtk_suffix -L$VTK_PREFIX/lib64/vtk$vtk_suffix"
 
             dnl now, eventually check version
             if [[ -n "$1" ]]; then
@@ -89,9 +91,11 @@ AC_DEFUN([AM_PATH_VTK],[
                 OLD_CFLAGS=$CFLAGS
                 OLD_CXXFLAGS=$CXXFLAGS
                 OLD_LDFLAGS=$LDFLAGS
+                OLD_LIBS=$LIBS
                 CFLAGS="$VTK_CFLAGS $CFLAGS"
                 CXXFLAGS="$VTK_CXXFLAGS $CXXFLAGS"
                 LDFLAGS="$VTK_LDFLAGS $LDFLAGS"
+                LIBS="$VTK_LIBS $LIBS"
 
                 dnl check if the installed VTK is greater or not
                 AC_COMPILE_IFELSE([
@@ -132,6 +136,7 @@ AC_DEFUN([AM_PATH_VTK],[
                     CFLAGS=$OLD_CFLAGS
                     CXXFLAGS=$OLD_CXXFLAGS
                     LDFLAGS=$OLD_LDFLAGS
+                    LIBS=$OLD_LIBS
 
                     $3
                 fi              # if [[ $vtkVersion = "OK ]];
