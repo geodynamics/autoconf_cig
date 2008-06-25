@@ -67,9 +67,20 @@ AC_DEFUN([AM_PATH_VTK],[
             AC_MSG_RESULT([yes])
 
             dnl these are the VTK libraries of a default build
-            dnl vtkCommon, vtkIO, vtkFiltering, plus dependencies (in case VTK libs are static)
-            dnl order is significant
-            VTK_LIBS="-lvtkIO -lvtkDICOMParser -lvtkFiltering -lvtkCommon -lvtktiff -lvtkpng -lvtkjpeg -lvtkzlib -lvtkexpat -lvtksys"
+
+            dnl figure out vtkCommon, vtkIO, vtkFiltering, plus dependencies (in case VTK libs are static)
+            dnl order of libs is significant
+            VTK_SUPPORT_LIBS="-lvtktiff -lvtkpng -lvtkjpeg -lvtkzlib -lvtkexpat"
+            AC_CHECK_LIB(vtkIO, abort, [], [
+                VTK_SUPPORT_LIBS="-ltiff -lpng -ljpeg -lzlib -lexpat"
+                AC_CHECK_LIB(vtkIO, exit, [], [
+                    VTK_SUPPORT_LIBS=""
+                    AC_CHECK_LIB(vtkIO, strstr, [], [
+                        AC_MSG_ERROR([cannot link against VTK libraries])
+                    ], [$VTK_SUPPORT_LIBS])
+                ], [$VTK_SUPPORT_LIBS])
+            ], [$VTK_SUPPORT_LIBS])
+            VTK_LIBS="-lvtkIO -lvtkDICOMParser -lvtkFiltering -lvtkCommon $VTK_SUPPORT_LIBS -lvtksys"
 
             dnl set VTK c,cpp,ld flags
             VTK_CFLAGS="-I$VTK_PREFIX/include/vtk$vtk_suffix"
