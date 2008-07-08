@@ -56,7 +56,7 @@ AC_DEFUN([CIGMA_PATH_HDF5],[
             #HDF5_CXXFLAGS="$HDF5_CFLAGS"
 
             HDF5_INCLUDES="-I$HDF5_PREFIX/include"
-            HDF5_LIBS="-lhdf5"
+            HDF5_LIBS="-lhdf5 -lz"
             HDF5_LDFLAGS="-L$HDF5_PREFIX/lib $HDF5_LIBS"
             $1
 

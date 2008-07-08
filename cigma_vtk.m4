@@ -70,13 +70,16 @@ AC_DEFUN([AM_PATH_VTK],[
 
             dnl figure out vtkCommon, vtkIO, vtkFiltering, plus dependencies (in case VTK libs are static)
             dnl order of libs is significant
-            VTK_SUPPORT_LIBS="-lvtktiff -lvtkpng -lvtkjpeg -lvtkzlib -lvtkexpat"
-            AC_CHECK_LIB(vtkIO, abort, [], [
-                VTK_SUPPORT_LIBS="-ltiff -lpng -ljpeg -lzlib -lexpat"
-                AC_CHECK_LIB(vtkIO, exit, [], [
-                    VTK_SUPPORT_LIBS=""
-                    AC_CHECK_LIB(vtkIO, strstr, [], [
-                        AC_MSG_ERROR([cannot link against VTK libraries])
+            VTK_SUPPORT_LIBS="-lvtktiff -lvtkpng -lvtkjpeg -lvtkzlib -lvtkexpat -lvfw32 -lgdi32"
+            AC_CHECK_LIB(vtkIO, strcmp, [], [
+                VTK_SUPPORT_LIBS="-lvtktiff -lvtkpng -lvtkjpeg -lvtkzlib -lvtkexpat"
+                AC_CHECK_LIB(vtkIO, abort, [], [
+                    VTK_SUPPORT_LIBS="-ltiff -lpng -ljpeg -lzlib -lexpat"
+                    AC_CHECK_LIB(vtkIO, exit, [], [
+                        VTK_SUPPORT_LIBS=""
+                        AC_CHECK_LIB(vtkIO, strstr, [], [
+                            AC_MSG_ERROR([cannot link against VTK libraries])
+                        ], [$VTK_SUPPORT_LIBS])
                     ], [$VTK_SUPPORT_LIBS])
                 ], [$VTK_SUPPORT_LIBS])
             ], [$VTK_SUPPORT_LIBS])
