@@ -64,8 +64,8 @@
 AC_DEFUN([AC_PROG_SWIG],[
         AC_PATH_PROG([SWIG],[swig])
         if test -z "$SWIG" ; then
-                AC_MSG_WARN([cannot find 'swig' program. You should look at http://www.swig.org])
-                SWIG='echo "Error: SWIG is not installed. You should look at http://www.swig.org" ; false'
+                AC_MSG_FAILURE([cannot find 'swig' program. Go to http://www.swig.org to download SWIG.])
+                SWIG='echo "Error: SWIG is not installed. SWIG is available at http://www.swig.org". ; false'
         elif test -n "$1" ; then
                 AC_MSG_CHECKING([for SWIG version])
                 [swig_version=`$SWIG -version 2>&1 | grep 'SWIG Version' | sed 's/.*\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/g'`]
@@ -106,16 +106,16 @@ AC_DEFUN([AC_PROG_SWIG],[
                         if test $available_major -ne $required_major \
                                 -o $available_minor -ne $required_minor \
                                 -o $available_patch -lt $required_patch ; then
-                                AC_MSG_WARN([SWIG version >= $1 is required.  You have $swig_version.  You should look at http://www.swig.org])
-                                SWIG='echo "Error: SWIG version >= $1 is required.  You have '"$swig_version"'.  You should look at http://www.swig.org" ; false'
+                                AC_MSG_FAILURE([SWIG version >= $1 is required.  You have $swig_version.  Go to http://www.swig.org to get the current version.])
+                                SWIG='echo "Error: SWIG version >= $1 is required.  You have '"$swig_version"'.  Go to http://www.swig.org to get the current version." ; false'
                         else
                                 AC_MSG_NOTICE([SWIG executable is '$SWIG'])
                                 SWIG_LIB=`$SWIG -swiglib`
                                 AC_MSG_NOTICE([SWIG library directory is '$SWIG_LIB'])
                         fi
                 else
-                        AC_MSG_WARN([cannot determine SWIG version])
-                        SWIG='echo "Error: Cannot determine SWIG version.  You should look at http://www.swig.org" ; false'
+                        AC_MSG_FAILURE([cannot determine SWIG version])
+                        SWIG='echo "Error: Cannot determine SWIG version.  See the SWIG website http://www.swig.org" ; false'
                 fi
         fi
         AC_SUBST([SWIG_LIB])
