@@ -20,6 +20,21 @@ AC_SUBST([PYTHON_INCDIR], [$PYTHON_INCDIR])
 ])dnl CIT_PYTHON_INCDIR
 
 
+# CIT_CHECK_PYTHON_HEADER
+# ---------------------
+# Checking the existence of Python.h
+AC_DEFUN([CIT_CHECK_PYTHON_HEADER], [
+# $Id$
+AC_MSG_CHECKING([for Python.h])
+if test -a "$PYTHON_INCDIR/Python.h"; then
+    AC_MSG_RESULT(yes)
+else
+    AC_MSG_RESULT(no)
+    AC_MSG_ERROR([Header file 'Python.h' not found, maybe you don't have the python development package, e.g. 'python-dev', installed?])
+fi
+])dnl CIT_CHECK_PYTHON_HEADER
+
+
 # CIT_PYTHON_SYSCONFIG
 # --------------------
 AC_DEFUN([CIT_PYTHON_SYSCONFIG], [
