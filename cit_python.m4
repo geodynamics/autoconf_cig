@@ -35,6 +35,50 @@ CPPFLAGS=$cit_save_CPPFLAGS
 ])dnl CIT_CHECK_PYTHON_HEADER
 
 
+# CIT_PYTHON_CONFIG
+# --------------------
+AC_DEFUN([CIT_PYTHON_CONFIG], [
+# $Id$
+AC_REQUIRE([AM_PATH_PYTHON])
+AC_MSG_CHECKING([$am_display_PYTHON config])
+cat >python-config.py <<END_OF_PYTHON
+[
+# This is based upon the pythonX.X-config utility that ships with
+# Python 2.4 and later.
+from distutils import sysconfig
+
+pyver = sysconfig.get_config_var('VERSION')
+getvar = sysconfig.get_config_var
+
+cppflags = ['-I' + sysconfig.get_python_inc(),
+            '-I' + sysconfig.get_python_inc(plat_specific=True)]
+print 'PYTHON_CPPFLAGS="%s"' % ' '.join(cppflags)
+
+ldflags = ['-L' + getvar('LIBPL')]
+print 'PYTHON_LDFLAGS="%s"' % ' '.join(ldflags)
+
+libs = getvar('LIBS').split() + getvar('SYSLIBS').split()
+libs.append('-lpython'+pyver)
+print 'PYTHON_LIBS="%s"' % ' '.join(libs)
+
+]
+END_OF_PYTHON
+eval `$PYTHON python-config.py 2>/dev/null`
+if test -n "$PYTHON_CPPFLAGS"; then
+    AC_MSG_RESULT(ok)
+else
+    AC_MSG_ERROR(["failed
+
+Run '$PYTHON python-config.py' to see what went wrong.
+"])
+fi
+rm -f python-config.py
+AC_SUBST([PYTHON_CPPFLAGS], [$PYTHON_CPPFLAGS])
+AC_SUBST([PYTHON_LDFLAGS], [$PYTHON_LDFLAGS])
+AC_SUBST([PYTHON_LIBS], [$PYTHON_LIBS])
+])dnl CIT_PYTHON_CONFIG
+
+
 # CIT_PYTHON_SYSCONFIG
 # --------------------
 AC_DEFUN([CIT_PYTHON_SYSCONFIG], [
@@ -124,7 +168,7 @@ if test -n "$PYTHON_INCDIR"; then
 else
     AC_MSG_ERROR(["failed
 
-Run '$PYTHON sysconfig.py' to see what wrong.
+Run '$PYTHON sysconfig.py' to see what went wrong.
 "])
 fi
 rm -f sysconfig.py
