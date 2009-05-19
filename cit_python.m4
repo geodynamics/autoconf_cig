@@ -21,7 +21,7 @@ AC_SUBST([PYTHON_INCDIR], [$PYTHON_INCDIR])
 
 
 # CIT_CHECK_PYTHON_HEADER
-# ---------------------
+# -----------------------
 # Checking the existence of Python.h
 AC_DEFUN([CIT_CHECK_PYTHON_HEADER], [
 # $Id$
@@ -35,8 +35,41 @@ CPPFLAGS=$cit_save_CPPFLAGS
 ])dnl CIT_CHECK_PYTHON_HEADER
 
 
+# CIT_CHECK_PYTHON_SHARED
+# -----------------------
+# Check whether -lpythonX.X is a shared library.
+AC_DEFUN([CIT_CHECK_PYTHON_SHARED], [
+# $Id$
+AC_REQUIRE([CIT_PYTHON_CONFIG])
+AC_MSG_CHECKING([whether -lpython$PYTHON_VERSION is a shared library])
+cit_save_CPPFLAGS=$CPPFLAGS
+cit_save_LDFLAGS=$LDFLAGS
+cit_save_LIBS=$LIBS
+CPPFLAGS="$PYTHON_CPPFLAGS $cit_save_CPPFLAGS"
+LDFLAGS="$PYTHON_LDFLAGS $cit_save_LDFLAGS"
+LIBS="$PYTHON_LIBS $cit_save_LIBS"
+AC_RUN_IFELSE([AC_LANG_PROGRAM([[
+#include "Python.h"
+]], [[
+    int status;
+    Py_Initialize();
+    status = PyRun_SimpleString("import binascii") != 0;
+    Py_Finalize();
+    return status;
+]])], [
+    AC_MSG_RESULT(yes)
+], [
+    AC_MSG_RESULT(no)
+    AC_MSG_ERROR([-lpython$PYTHON_VERSION is not a shared library])
+])
+CPPFLAGS=$cit_save_CPPFLAGS
+LDFLAGS=$cit_save_LDFLAGS
+LIBS=$cit_save_LIBS
+])dnl CIT_CHECK_PYTHON_SHARED
+
+
 # CIT_PYTHON_CONFIG
-# --------------------
+# -----------------
 AC_DEFUN([CIT_PYTHON_CONFIG], [
 # $Id$
 AC_REQUIRE([AM_PATH_PYTHON])
