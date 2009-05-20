@@ -87,7 +87,7 @@ cppflags = ['-I' + sysconfig.get_python_inc(),
             '-I' + sysconfig.get_python_inc(plat_specific=True)]
 print 'PYTHON_CPPFLAGS="%s"' % ' '.join(cppflags)
 
-ldflags = ['-L' + getvar('LIBPL')]
+ldflags = ['-L' + getvar('LIBDIR'), '-L' + getvar('LIBPL')]
 print 'PYTHON_LDFLAGS="%s"' % ' '.join(ldflags)
 
 libs = getvar('LIBS').split() + getvar('SYSLIBS').split()
