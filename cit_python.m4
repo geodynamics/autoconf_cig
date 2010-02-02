@@ -321,7 +321,7 @@ AS_IF([AC_TRY_COMMAND([$PYTHON setup.py develop -H None -f $cit_builddir/deps -x
 AC_MSG_CHECKING([for egg-related flags])
 AS_IF([AC_TRY_COMMAND([$PYTHON setup.py egg_flags >&AS_MESSAGE_LOG_FD 2>&AS_MESSAGE_LOG_FD])],
       [AC_MSG_RESULT(ok)
-       . egg-flags.sh
+       . ./egg-flags.sh
        rm -f egg-flags.sh
       ],
       [AC_MSG_RESULT(failed)
