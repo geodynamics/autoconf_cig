@@ -26,7 +26,7 @@
 #
 # LAST MODIFICATION
 #
-#   2008-04-12
+#   2010-07-17 (Brad Aagaard, permit newer major and minor versions than required)
 #
 # COPYLEFT
 #
@@ -103,9 +103,19 @@ AC_DEFUN([AC_PROG_SWIG],[
                         if test -z "$available_patch" ; then
                                 [available_patch=0]
                         fi
-                        if test $available_major -lt $required_major \
-                                -o $available_minor -lt $required_minor \
-                                -o $available_patch -lt $required_patch ; then
+                        echo "required_major=$required_major"
+                        echo "required_minor=$required_minor"
+                        echo "required_patch=$required_patch"
+                        echo "available_major=$available_major"
+                        echo "available_minor=$available_minor"
+                        echo "available_patch=$available_patch"
+                        if test $available_major -lt $required_major ; then
+                                AC_MSG_FAILURE([SWIG version >= $1 is required.  You have $swig_version.  Go to http://www.swig.org to get the current version.])
+                                SWIG='echo "Error: SWIG version >= $1 is required.  You have '"$swig_version"'.  Go to http://www.swig.org to get the current version." ; false'
+                        elif test $available_major -eq $required_major -a $available_minor -lt $required_minor ; then
+                                AC_MSG_FAILURE([SWIG version >= $1 is required.  You have $swig_version.  Go to http://www.swig.org to get the current version.])
+                                SWIG='echo "Error: SWIG version >= $1 is required.  You have '"$swig_version"'.  Go to http://www.swig.org to get the current version." ; false'
+                        elif test $available_major -eq $required_major -a $available_minor -eq $required_minor -a $available_patch -lt $required_patch ; then
                                 AC_MSG_FAILURE([SWIG version >= $1 is required.  You have $swig_version.  Go to http://www.swig.org to get the current version.])
                                 SWIG='echo "Error: SWIG version >= $1 is required.  You have '"$swig_version"'.  Go to http://www.swig.org to get the current version." ; false'
                         else
