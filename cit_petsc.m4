@@ -71,15 +71,16 @@ if test -d "$PETSC_DIR/$PETSC_ARCH/conf"; then
     AC_MSG_RESULT(no)
     m4_default([$3], [AC_MSG_ERROR([Could not find file with PETSc configuration settings; check PETSC_ARCH/conf])])
   fi
-  cit_petsc_variables="$PETSC_DIR/conf/variables"
-elif test -d "$PETSC_DIR/$PETSC_ARCH"; then
-    # new config layout
-    cit_petsc_petscconf="$PETSC_DIR/$PETSC_ARCH/conf/petscconf"
-    cit_petsc_variables="$PETSC_DIR/conf/variables"
-elif test -d "$PETSC_DIR/bmake/$PETSC_ARCH"; then
+  # Using conf/variables *should* be obsolete for new config.
+  #cit_petsc_variables="$PETSC_DIR/conf/variables"
+elif test -d "$PESC_DIR/bmake/$PETSC_ARCH"; then
     # old config layout
     cit_petsc_petscconf="$PETSC_DIR/bmake/$PETSC_ARCH/petscconf"
     cit_petsc_variables="$PETSC_DIR/bmake/common/variables"
+   if test ! -f "$cit_petsc_variables"; then
+       AC_MSG_RESULT(error)
+       m4_default([$3], [AC_MSG_ERROR([PETSc config file $cit_petsc_variables not found; check PETSC_DIR])])
+   fi
 else
     AC_MSG_RESULT(no)
     m4_default([$3], [AC_MSG_ERROR([PETSc config dir not found; check PETSC_ARCH])])
@@ -88,16 +89,12 @@ if test ! -f "$cit_petsc_petscconf"; then
     AC_MSG_RESULT(no)
     m4_default([$3], [AC_MSG_ERROR([PETSc config file $cit_petsc_petscconf not found; check PETSC_ARCH])])
 fi
-if test ! -f "$cit_petsc_variables"; then
-    AC_MSG_RESULT(error)
-    m4_default([$3], [AC_MSG_ERROR([PETSc config file $cit_petsc_variables not found; check PETSC_DIR])])
-fi
 AC_MSG_RESULT([$cit_petsc_petscconf])
 
 AC_MSG_CHECKING([for PETSc version == $1])
 echo "PETSC_DIR = $PETSC_DIR" > petscconf
 echo "PETSC_ARCH = $PETSC_ARCH" >> petscconf
-cat "$cit_petsc_petscconf" "$cit_petsc_variables" >> petscconf
+cat $cit_petsc_petscconf $cit_petsc_variables >> petscconf
 cat >petsc.py <<END_OF_PYTHON
 [from distutils.sysconfig import parse_config_h, parse_makefile, expand_makefile_vars
 
@@ -112,7 +109,8 @@ keys = (
     'PETSC_VERSION_MINOR',
     'PETSC_VERSION_SUBMINOR',
 
-    'PETSC_INCLUDE',
+    'PETSC_CC_INCLUDES',
+    'PETSC_FC_INCLUDES',
     'PETSC_LIB',
     'PETSC_FORTRAN_LIB',
 
@@ -163,7 +161,8 @@ fi
 AC_SUBST([PETSC_VERSION_MAJOR])
 AC_SUBST([PETSC_VERSION_MINOR])
 AC_SUBST([PETSC_VERSION_SUBMINOR])
-AC_SUBST([PETSC_INCLUDE])
+AC_SUBST([PETSC_CC_INCLUDES])
+AC_SUBST([PETSC_FC_INCLUDES])
 AC_SUBST([PETSC_LIB])
 AC_SUBST([PETSC_FORTRAN_LIB])
 AC_SUBST([PETSC_CC])
@@ -290,7 +289,7 @@ cit_petsc_save_CC=$CC
 cit_petsc_save_CPPFLAGS=$CPPFLAGS
 cit_petsc_save_LIBS=$LIBS
 CC=$PETSC_CC
-CPPFLAGS="$PETSC_INCLUDE $CPPFLAGS"
+CPPFLAGS="$PETSC_CC_INCLUDES $CPPFLAGS"
 AC_MSG_CHECKING([for petsc.h])
 dnl Use AC_TRY_COMPILE instead of AC_CHECK_HEADER because the
 dnl latter also preprocesses using $CXXCPP.
@@ -308,7 +307,7 @@ AC_TRY_COMPILE([
     # PETSC_CC is an MPI wrapper.
     CIT_MPI_INCLUDES(cit_includes, $PETSC_CC, [
 	AC_MSG_CHECKING([for petsc.h])
-	CPPFLAGS="$PETSC_INCLUDE $cit_includes $cit_petsc_save_CPPFLAGS"
+	CPPFLAGS="$PETSC_CC_INCLUDES $cit_includes $cit_petsc_save_CPPFLAGS"
 	AC_TRY_COMPILE([
 #include <petsc.h>
 	], [], [
@@ -363,7 +362,7 @@ AC_LANG_PUSH(C++)
 cit_petsc_save_LIBS=$LIBS
 cit_petsc_save_CPPFLAGS=$CPPFLAGS
 LIBS="$PETSC_LIB $PETSC_CXX_LIB $LIBS"
-CPPFLAGS="$PETSC_INCLUDE $PETSC_CXX_INCLUDE $CPPFLAGS"
+CPPFLAGS="$PETSC_CC_INCLUDES $PETSC_CXX_INCLUDE $CPPFLAGS"
 AC_LINK_IFELSE(AC_LANG_PROGRAM([[
 #include <petscmesh.h>
 ]], [[
