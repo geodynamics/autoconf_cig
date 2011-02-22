@@ -367,7 +367,7 @@ AC_LINK_IFELSE(AC_LANG_PROGRAM([[
 #include <petscmesh.h>
 ]], [[
     const int dim = 3;
-    ALE::Mesh mesh(PETSC_COMM_WORLD, dim);
+    ALE::Mesh<int,double> mesh(PETSC_COMM_WORLD, dim);
 ]]), [
     AC_MSG_RESULT(yes)
 ], [
