@@ -440,14 +440,14 @@ else
 fi
 if test -n "$2" ; then
   AC_MSG_CHECKING([for $1 version])
-  eval $PYTHON -c "import $1; print $1.__version__" | sed 's/\([0-9]\{1,\}\)\.\([0-9]\{1,\}\)\.\([0-9]\{1,\}\)/avail_major=\1; avail_minor=\2; avail_patch=\3/'
-  eval `echo $2 | sed 's/\([0-9]\{1,\}\)\.\([0-9]\{1,\}\)\.\([0-9]\{1,\}\)/req_major=\1; req_minor=\2; req_patch=\3/'`
+  [eval `$PYTHON -c "import $1; print $1.__version__" | sed 's/\([0-9]\{1,\}\)\.\([0-9]\{1,\}\)\.\([0-9]\{1,\}\)/avail_major=\1; avail_minor=\2; avail_patch=\3/'`]
+  [eval `echo $2 | sed 's/\([0-9]\{1,\}\)\.\([0-9]\{1,\}\)\.\([0-9]\{1,\}\)/req_major=\1; req_minor=\2; req_patch=\3/' 2>/dev/null`]
   if test $avail_major -lt $req_major ; then
     AC_MSG_FAILURE([$1 version >= $2 is required. You have $avail_major.$avail_minor.$avail_patch.])
   elif test $avail_major -eq $req_major -a $avail_minor -lt $req_minor; then
-    AC_MSG_FAILURE([$1 version >= $2 is required. You have $avail_major.$avail_minor.$avail_path.])
+    AC_MSG_FAILURE([$1 version >= $2 is required. You have $avail_major.$avail_minor.$avail_patch.])
   elif test $avail_major -eq $req_major -a $avail_minor -eq $req_minor -a $avail_patch -lt $req_patch; then
-    AC_MSG_FAILURE([$1 version >= $2 is required. You have $avail_major.$avail_minor.$avail_path.])
+    AC_MSG_FAILURE([$1 version >= $2 is required. You have $avail_major.$avail_minor.$avail_patch.])
   else
     AC_MSG_RESULT([$avail_major.$avail_minor.$avail_patch])
   fi
