@@ -71,6 +71,14 @@ if test -d "$PETSC_DIR/$PETSC_ARCH/conf"; then
     AC_MSG_RESULT(no)
     m4_default([$3], [AC_MSG_ERROR([Could not find file with PETSc configuration settings; check PETSC_ARCH/conf])])
   fi
+  # installed PETSc
+elif test -d "$PETSC_DIR/conf"; then
+  if test -f "$PETSC_DIR/conf/petscvariables"; then
+    cit_petsc_petscconf="$PETSC_DIR/conf/petscvariables"
+  else
+    AC_MSG_RESULT(no)
+    m4_default([$3], [AC_MSG_ERROR([Could not find file with PETSc configuration settings; check PETSC_DIR/conf])])
+  fi
   # Using conf/variables *should* be obsolete for new config.
   #cit_petsc_variables="$PETSC_DIR/conf/variables"
 elif test -d "$PESC_DIR/bmake/$PETSC_ARCH"; then
