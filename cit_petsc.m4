@@ -372,7 +372,7 @@ cit_petsc_save_CPPFLAGS=$CPPFLAGS
 LIBS="$PETSC_LIB $PETSC_CXX_LIB $LIBS"
 CPPFLAGS="$PETSC_CC_INCLUDES $PETSC_CXX_INCLUDE $CPPFLAGS"
 AC_LINK_IFELSE(AC_LANG_PROGRAM([[
-#include <petscmesh.h>
+#include <petscmesh.hh>
 ]], [[
     const int dim = 3;
     ALE::Mesh<int,double> mesh(PETSC_COMM_WORLD, dim);
