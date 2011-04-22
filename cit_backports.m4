@@ -12,4 +12,4 @@ m4_ifdef([AC_PROG_MKDIR_P], [], [
      AC_SUBST([MKDIR_P])])])
 
 
-# End of file
+dnl End of file
