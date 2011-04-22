@@ -10,7 +10,6 @@ m4_ifdef([AC_PROG_MKDIR_P], [], [
     [AC_REQUIRE([AM_PROG_MKDIR_P])dnl defined by automake
      MKDIR_P='$(mkdir_p)'
      AC_SUBST([MKDIR_P])])])
-AC_PROG_MKDIR_P
 
 
 # End of file
