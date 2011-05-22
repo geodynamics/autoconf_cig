@@ -36,5 +36,18 @@ AC_DEFUN([CIT_CUDA_LIB], [
   ])dnl
 ])dnl CIT_CUDA_LIB
 
+# ----------------------------------------------------------------------
+# CIT_CUDA_COMPILER
+# ----------------------------------------------------------------------
+# Checking for the CUDA compiler.
+AC_DEFUN([CIT_CUDA_COMPILER], [
+  AC_PATH_PROG(NVCC, nvcc)
+  if test -z "$NVCC" ; then
+    AC_MSG_FAILURE([cannot find 'nvcc' program.])
+    NVCC=`echo "Error: nvcc is not installed." ; false`
+  fi
+])dnl CIT_CUDA_COMPILER
+
+
 
 dnl end of file
