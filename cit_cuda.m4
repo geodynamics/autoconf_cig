@@ -29,7 +29,7 @@ AC_DEFUN([CIT_CUDA_LIB], [
   AC_COMPILE_IFELSE(
     [AC_LANG_PROGRAM([[#include <cuda_runtime.h>]],
                      [[void* ptr = 0;]]
-  	             [[cudaMalloc(ptr, ptr, 1);]])],
+  	             [[cudaMalloc(&ptr, 1);]])],
     [AC_MSG_RESULT(yes)],
     [AC_MSG_RESULT(no)
      AC_MSG_ERROR([cuda library not found.])
