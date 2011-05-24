@@ -308,15 +308,15 @@ cit_save_PYTHONPATH="$PYTHONPATH"
 PYTHONPATH="$cit_builddir/python:$PYTHONPATH"; export PYTHONPATH
 cd $srcdir
 
-AC_MSG_NOTICE([downloading missing Python dependencies])
-AS_IF([AC_TRY_COMMAND([$PYTHON setup.py install_deps -f $cit_builddir/deps -zmxd $cit_builddir/deps >&AS_MESSAGE_LOG_FD 2>&AS_MESSAGE_LOG_FD])],
-      [],
-      [AC_MSG_FAILURE([cannot download missing Python dependencies])])
-
-AC_MSG_NOTICE([building Python dependencies])
-AS_IF([AC_TRY_COMMAND([$PYTHON setup.py develop -H None -f $cit_builddir/deps -x -d $cit_builddir/python >&AS_MESSAGE_LOG_FD 2>&AS_MESSAGE_LOG_FD])],
-      [],
-      [AC_MSG_FAILURE([building Python dependencies])])
+#AC_MSG_NOTICE([downloading missing Python dependencies])
+#AS_IF([AC_TRY_COMMAND([$PYTHON setup.py install_deps -f $cit_builddir/deps -zmxd $cit_builddir/deps >&AS_MESSAGE_LOG_FD 2>&AS_MESSAGE_LOG_FD])],
+#      [],
+#      [AC_MSG_FAILURE([cannot download missing Python dependencies])])
+#
+#AC_MSG_NOTICE([building Python dependencies])
+#AS_IF([AC_TRY_COMMAND([$PYTHON setup.py develop -H None -f $cit_builddir/deps -x -d $cit_builddir/python >&AS_MESSAGE_LOG_FD 2>&AS_MESSAGE_LOG_FD])],
+#      [],
+#      [AC_MSG_FAILURE([building Python dependencies])])
 
 AC_MSG_CHECKING([for egg-related flags])
 AS_IF([AC_TRY_COMMAND([$PYTHON setup.py egg_flags >&AS_MESSAGE_LOG_FD 2>&AS_MESSAGE_LOG_FD])],
