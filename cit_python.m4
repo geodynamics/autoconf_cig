@@ -318,6 +318,11 @@ cd $srcdir
 #      [],
 #      [AC_MSG_FAILURE([building Python dependencies])])
 
+AC_MSG_NOTICE([Generating Python egg info])
+AS_IF([AC_TRY_COMMAND([$PYTHON setup.py egg_info  >&AS_MESSAGE_LOG_FD 2>&AS_MESSAGE_LOG_FD])],
+      [],
+      [AC_MSG_FAILURE([generating Python egg info])])
+
 AC_MSG_CHECKING([for egg-related flags])
 AS_IF([AC_TRY_COMMAND([$PYTHON setup.py egg_flags >&AS_MESSAGE_LOG_FD 2>&AS_MESSAGE_LOG_FD])],
       [AC_MSG_RESULT(ok)
