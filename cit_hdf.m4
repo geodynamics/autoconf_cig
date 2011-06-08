@@ -1,5 +1,7 @@
 # -*- Autoconf -*-
 
+## Old autoconf macros (used by Cigma?)
+
 
 ## ------------------------ ##
 ## Autoconf macros for HDF. ##
