@@ -204,7 +204,7 @@ else
 Run '$PYTHON sysconfig.py' to see what went wrong.
 "])
 fi
-rm -f sysconfig.py
+rm -f sysconfig.py sysconfig.pyc
 AC_SUBST([PYTHON_INCDIR], [$PYTHON_INCDIR])
 AC_SUBST([PYTHON_BLDLIBRARY], [$PYTHON_BLDLIBRARY])
 AC_SUBST([PYTHON_LDFLAGS], [$PYTHON_LDFLAGS])
