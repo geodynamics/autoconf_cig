@@ -486,4 +486,37 @@ AC_DEFUN([CIT_MPI_LINK_INFO_SWITCHES], ["-show" "-showme" "-echo" "-link_info"])
 AC_DEFUN([CIT_SKIP_MPICXX_DEFINES], ["-DMPICH_SKIP_MPICXX" "-UHAVE_MPI_CPP" "-DLAM_WANT_MPI2CPP=0" "-DLAM_BUILDING=1" "-DOMPI_WANT_CXX_BINDINGS=0" "-DOMPI_BUILDING=1"])
 
 
+# CIT_MPI_INCDIR(COMMAND)
+# --------------
+# Check for MPI C++ header used by COMMAND
+# User may set MPI_INC to these directories or else it's auto-detected.
+# Result is stored in MPI_INCLUDES.
+AC_DEFUN([CIT_MPI_INCDIR], [
+  AC_ARG_VAR(MPI_INC, [Location of MPI include mpi.h, needed by CUDA/VTK (default: auto-detect)])
+  AC_LANG_PUSH([C++])
+  AC_REQUIRE_CPP
+  CPPFLAGS_save="$CPPFLAGS"
+
+  if test "x$MPI_INC" = "x"; then
+    MPI_INC=`$1 -showme:incdirs`
+  fi
+  if test "x$MPI_INC" != "x"; then
+    dnl showme:incdirs may return multiple directories:
+    for i in $MPI_INC
+    do
+      MPI_INCLUDES="$MPI_INCLUDES -I$i"
+    done
+    CPPFLAGS="$MPI_INCLUDES $CPPFLAGS"
+  fi
+  AC_CHECK_HEADER([mpi.h], [], [
+    AC_MSG_ERROR([MPI header not found; try setting MPI_INC.])
+  ])
+
+  CPPFLAGS="$CPPFLAGS_save"
+  AC_LANG_POP([C++])
+
+  AC_SUBST([MPI_INCLUDES])
+])
+
+
 dnl end of file
