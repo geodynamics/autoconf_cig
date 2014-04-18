@@ -11,47 +11,47 @@
 # ----------------------------------------------------------------------
 # Determine the directory containing <CL/cl.h>
 AC_DEFUN([CIT_OPENCL_CONFIG], [
-  AC_ARG_VAR(OPENCL_INC, [Location of OpenCL include files])
-  AC_ARG_VAR(OPENCL_LIB, [Location of Opencl library libopencl])
+  AC_ARG_VAR(OCL_INC, [Location of OpenCL include files])
+  AC_ARG_VAR(OCL_LIB, [Location of OpenCL library libOpenCL])
 
-  AC_LANG_PUSH([C++])
+  AC_LANG_PUSH([C])
   AC_REQUIRE_CPP
-  CPPFLAGS_save="$CPPFLAGS"
+  CFLAGS_save="$CFLAGS"
   LDFLAGS_save="$LDFLAGS"
   LIBS_save="$LIBS"
 
   dnl Check for OpenCL headers
-  if test "x$OPENCL_INC" != "x"; then
-    OPENCL_CPPFLAGS="-I$OPENCL_INC"
-    CPPFLAGS="$OPENCL_CPPFLAGS $CPPFLAGS"
+  if test "x$OCL_INC" != "x"; then
+    OCL_CFLAGS="-I$OCL_INC"
+    CFLAGS="$OCL_CFLAGS $CFLAGS"
   fi
   AC_CHECK_HEADER([CL/cl.h], [], [
-    AC_MSG_ERROR([OpenCL header not found; try setting OPENCL_INC.])
+    AC_MSG_ERROR([OpenCL header not found; try setting OCL_INC.])
   ])
 
-  if test "x$OPENCL_LIB" != "x"; then
-    OPENCL_LDFLAGS="-L$OPENCL_LIB"
-    LDFLAGS="$OPENCL_LDFLAGS $LDFLAGS"
+  if test "x$OCL_LIB" != "x"; then
+    OCL_LDFLAGS="-L$OCL_LIB"
+    LDFLAGS="$OCL_LDFLAGS $LDFLAGS"
   fi
-  OPENCL_LIBS="-lOpenCL"
-  LIBS="$OPENCL_LIBS $LIBS"
+  OCL_LIBS="-lOpenCL"
+  LIBS="$OCL_LIBS $LIBS"
   AC_MSG_CHECKING([for clCreateBuffer in -lOpenCL])
   AC_LINK_IFELSE(
     [AC_LANG_PROGRAM([[#include <CL/cl.h>]],
   	             [[clGetPlatformIDs(0, 0, 0);]])],
     [AC_MSG_RESULT(yes)],
     [AC_MSG_RESULT(no)
-     AC_MSG_ERROR([OpenCL library not found; try setting OPENCL_LIB.])
+     AC_MSG_ERROR([OpenCL library not found; try setting OCL_LIB.])
   ])
 
-  CPPFLAGS="$CPPFLAGS_save"
+  CFLAGS="$CFLAGS_save"
   LDFLAGS="$LDFLAGS_save"
   LIBS="$LIBS_save"
-  AC_LANG_POP([C++])
+  AC_LANG_POP([C])
 
-  AC_SUBST([OPENCL_CPPFLAGS])
-  AC_SUBST([OPENCL_LDFLAGS])
-  AC_SUBST([OPENCL_LIBS])
+  AC_SUBST([OCL_CFLAGS])
+  AC_SUBST([OCL_LDFLAGS])
+  AC_SUBST([OCL_LIBS])
 ])dnl CIT_OPENCL_COMPILER
 
 
