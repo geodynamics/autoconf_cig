@@ -25,19 +25,40 @@ AC_DEFUN([CIT_OPENCL_CONFIG], [
     OCL_CFLAGS="-I$OCL_INC"
     CFLAGS="$OCL_CFLAGS $CFLAGS"
   fi
-  AC_CHECK_HEADER([CL/cl.h], [], [
+  # tests for Apple Mac OsX OpenCL header file
+  case $host in
+  *apple*) HEADER_H="OpenCL/cl.h";;
+  *) HEADER_H="CL/cl.h";;
+  esac
+  AC_CHECK_HEADER([${HEADER_H}], [], [
     AC_MSG_ERROR([OpenCL header not found; try setting OCL_INC.])
   ])
 
   if test "x$OCL_LIB" != "x"; then
-    OCL_LDFLAGS="-L$OCL_LIB"
+    # tests for Apple Mac OsX which could add "-framework OpenCL"
+    case $host in
+    *apple*) OCL_LDFLAGS="$OCL_LIB";;
+    *) OCL_LDFLAGS="-L$OCL_LIB";;
+    esac
     LDFLAGS="$OCL_LDFLAGS $LDFLAGS"
+  else
+    # adds default OpenCL library
+    case $host in
+    *apple*) OCL_LIBS="-framework OpenCL";;
+    *) OCL_LIBS="-lOpenCL";;
+    esac
   fi
-  OCL_LIBS="-lOpenCL"
+
   LIBS="$OCL_LIBS $LIBS"
-  AC_MSG_CHECKING([for clCreateBuffer in -lOpenCL])
+  AC_MSG_CHECKING([for clGetPlatformIDs in OpenCL])
   AC_LINK_IFELSE(
-    [AC_LANG_PROGRAM([[#include <CL/cl.h>]],
+    [AC_LANG_PROGRAM([[
+#ifdef __APPLE__
+#include <OpenCL/cl.h>
+#else
+#include <CL/cl.h>
+#endif
+    ]],
   	             [[clGetPlatformIDs(0, 0, 0);]])],
     [AC_MSG_RESULT(yes)],
     [AC_MSG_RESULT(no)
