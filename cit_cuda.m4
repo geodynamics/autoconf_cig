@@ -20,7 +20,7 @@ AC_DEFUN([CIT_CUDA_CONFIG], [
     AC_MSG_ERROR([cannot find 'nvcc' program.])
   fi
 
-  AC_LANG_PUSH([C++])
+  AC_LANG_PUSH([C])
   AC_REQUIRE_CPP
   CPPFLAGS_save="$CPPFLAGS"
   LDFLAGS_save="$LDFLAGS"
@@ -54,7 +54,7 @@ AC_DEFUN([CIT_CUDA_CONFIG], [
   CPPFLAGS="$CPPFLAGS_save"
   LDFLAGS="$LDFLAGS_save"
   LIBS="$LIBS_save"
-  AC_LANG_POP([C++])
+  AC_LANG_POP([C])
 
   AC_SUBST([CUDA_CPPFLAGS])
   AC_SUBST([CUDA_LDFLAGS])
