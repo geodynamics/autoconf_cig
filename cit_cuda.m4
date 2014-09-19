@@ -37,14 +37,16 @@ AC_DEFUN([CIT_CUDA_CONFIG], [
   LDFLAGS_save="$LDFLAGS"
   LIBS_save="$LIBS"
 
-  # Check for CUDA headers
-  AC_MSG_CHECKING([for cuda_runtime.h])
-
+  # uses nvcc compiler
+  CFLAGS="$CUDA_FLAGS"
   if test "x$CUDA_INC" != "x"; then
     CUDA_CPPFLAGS="-I$CUDA_INC"
-    CFLAGS="$CUDA_CPPFLAGS $CFLAGS"
+    CFLAGS="$CFLAGS $CUDA_CPPFLAGS"
   fi
+
+  # Check for CUDA headers
   # runs test with nvcc
+  AC_MSG_CHECKING([for cuda_runtime.h])
   ac_compile='$NVCC -c $CFLAGS conftest.$ac_ext >&5'
   AC_COMPILE_IFELSE([
     AC_LANG_PROGRAM([[
@@ -58,7 +60,6 @@ AC_DEFUN([CIT_CUDA_CONFIG], [
   ])
 
   # Check fo CUDA library
-
   if test "x$CUDA_LIB" != "x"; then
     CUDA_LDFLAGS="-L$CUDA_LIB"
     LDFLAGS="$CUDA_LDFLAGS $LDFLAGS"
