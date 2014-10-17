@@ -97,9 +97,10 @@ AC_DEFUN([CIT_CUDA_CONFIG], [
   # runs linking test with standard compiler
   AC_MSG_CHECKING([linking with cudaMalloc in -lcudart])
   # C compiler linking
-  #ac_link='$NVCC -c $CFLAGS conftest.$ac_ext >&5; $CC -o conftest$ac_exeext $LDFLAGS conftest.$ac_objext $LIBS >&5'
+  ac_link='$NVCC -c $CFLAGS conftest.$ac_ext >&5; $CC -o conftest$ac_exeext $LDFLAGS conftest.$ac_objext $LIBS >&5'
   # Fortran compiler linking
-  ac_link='$NVCC -c $CFLAGS conftest.$ac_ext >&5; $FC -o conftest$ac_exeext $LDFLAGS conftest.$ac_objext $LIBS >&5'
+  # note: fortran linking with ifort would need -nofor-main to succeed
+  #ac_link='$NVCC -c $CFLAGS conftest.$ac_ext >&5; $FC -o conftest$ac_exeext $LDFLAGS conftest.$ac_objext $LIBS >&5'
   AC_LINK_IFELSE(
     [AC_LANG_PROGRAM([[
 #include <stdio.h>
