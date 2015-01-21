@@ -62,14 +62,21 @@ fi
 AC_MSG_RESULT([$PETSC_ARCH])
 
 AC_MSG_CHECKING([for PETSc config])
-if test -d "$PETSC_DIR/$PETSC_ARCH/conf"; then
+if test -d "$PETSC_DIR/$PETSC_ARCH/lib/petsc-conf"; then
+  if test -f "$PETSC_DIR/$PETSC_ARCH/lib/petsc-conf/petscvariables"; then
+    cit_petsc_petscconf="$PETSC_DIR/$PETSC_ARCH/lib/petsc-conf/petscvariables"
+  else 
+    AC_MSG_RESULT(no)
+    m4_default([$3], [AC_MSG_ERROR([Could not find file with PETSc configuration settings; check PETSC_DIR/PETSC_ARCH/lib/petsc-conf])])
+  fi
+elif test -d "$PETSC_DIR/$PETSC_ARCH/conf"; then
   if test -f "$PETSC_DIR/$PETSC_ARCH/conf/petscvariables"; then
     cit_petsc_petscconf="$PETSC_DIR/$PETSC_ARCH/conf/petscvariables"
   elif test -f "$PETSC_DIR/$PETSC_ARCH/conf/petscconf"; then
     cit_petsc_petscconf="$PETSC_DIR/$PETSC_ARCH/conf/petscconf"
   else 
     AC_MSG_RESULT(no)
-    m4_default([$3], [AC_MSG_ERROR([Could not find file with PETSc configuration settings; check PETSC_ARCH/conf])])
+    m4_default([$3], [AC_MSG_ERROR([Could not find file with PETSc configuration settings; check PETSC_DIR/PETSC_ARCH/conf])])
   fi
   # installed PETSc
 elif test -d "$PETSC_DIR/conf"; then
