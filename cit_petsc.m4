@@ -33,8 +33,7 @@ fi
 AC_MSG_RESULT([$PETSC_DIR])
 
 # In what follows, we consistenly check for the new config layout
-# first, in case the user is using an old HG working copy with junk in
-# it.
+# first, and then fall back to older layouts.
 
 AC_MSG_CHECKING([for PETSc arch])
 if test -z "$PETSC_ARCH"; then
@@ -62,6 +61,8 @@ fi
 AC_MSG_RESULT([$PETSC_ARCH])
 
 AC_MSG_CHECKING([for PETSc config])
+# LATEST CONFIG setup (petsc-conf)
+# build
 if test -d "$PETSC_DIR/$PETSC_ARCH/lib/petsc-conf"; then
   if test -f "$PETSC_DIR/$PETSC_ARCH/lib/petsc-conf/petscvariables"; then
     cit_petsc_petscconf="$PETSC_DIR/$PETSC_ARCH/lib/petsc-conf/petscvariables"
@@ -69,6 +70,16 @@ if test -d "$PETSC_DIR/$PETSC_ARCH/lib/petsc-conf"; then
     AC_MSG_RESULT(no)
     m4_default([$3], [AC_MSG_ERROR([Could not find file with PETSc configuration settings; check PETSC_DIR/PETSC_ARCH/lib/petsc-conf])])
   fi
+# installed PETSc
+elif test -d "$PETSC_DIR//lib/petsc-conf"; then
+  if test -f "$PETSC_DIR//lib/petsc-conf/petscvariables"; then
+    cit_petsc_petscconf="$PETSC_DIR//lib/petsc-conf/petscvariables"
+  else 
+    AC_MSG_RESULT(no)
+    m4_default([$3], [AC_MSG_ERROR([Could not find file with PETSc configuration settings; check PETSC_DIR//lib/petsc-conf])])
+  fi
+# PREVIOUS CONFIG setup (conf)
+# build
 elif test -d "$PETSC_DIR/$PETSC_ARCH/conf"; then
   if test -f "$PETSC_DIR/$PETSC_ARCH/conf/petscvariables"; then
     cit_petsc_petscconf="$PETSC_DIR/$PETSC_ARCH/conf/petscvariables"
@@ -78,7 +89,7 @@ elif test -d "$PETSC_DIR/$PETSC_ARCH/conf"; then
     AC_MSG_RESULT(no)
     m4_default([$3], [AC_MSG_ERROR([Could not find file with PETSc configuration settings; check PETSC_DIR/PETSC_ARCH/conf])])
   fi
-  # installed PETSc
+# installed PETSc
 elif test -d "$PETSC_DIR/conf"; then
   if test -f "$PETSC_DIR/conf/petscvariables"; then
     cit_petsc_petscconf="$PETSC_DIR/conf/petscvariables"
