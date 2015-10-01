@@ -61,9 +61,27 @@ fi
 AC_MSG_RESULT([$PETSC_ARCH])
 
 AC_MSG_CHECKING([for PETSc config])
-# LATEST CONFIG setup (petsc-conf)
+# LATEST CONFIG setup (petsc/conf)
 # build
-if test -d "$PETSC_DIR/$PETSC_ARCH/lib/petsc-conf"; then
+if test -d "$PETSC_DIR/$PETSC_ARCH/lib/petsc/conf"; then
+  if test -f "$PETSC_DIR/$PETSC_ARCH/lib/petsc/conf/petscvariables"; then
+    cit_petsc_petscconf="$PETSC_DIR/$PETSC_ARCH/lib/petsc/conf/petscvariables"
+  else 
+    AC_MSG_RESULT(no)
+    m4_default([$3], [AC_MSG_ERROR([Could not find file with PETSc configuration settings; check PETSC_DIR/PETSC_ARCH/lib/petsc-conf])])
+  fi
+# installed PETSc
+elif test -d "$PETSC_DIR//lib/petsc/conf"; then
+  if test -f "$PETSC_DIR//lib/petsc/conf/petscvariables"; then
+    cit_petsc_petscconf="$PETSC_DIR//lib/petsc/conf/petscvariables"
+  else 
+    AC_MSG_RESULT(no)
+    m4_default([$3], [AC_MSG_ERROR([Could not find file with PETSc configuration settings; check PETSC_DIR//lib/petsc-conf])])
+  fi
+#  
+# PREVIOUS CONFIG setup (petsc-conf)
+# build
+elif test -d "$PETSC_DIR/$PETSC_ARCH/lib/petsc-conf"; then
   if test -f "$PETSC_DIR/$PETSC_ARCH/lib/petsc-conf/petscvariables"; then
     cit_petsc_petscconf="$PETSC_DIR/$PETSC_ARCH/lib/petsc-conf/petscvariables"
   else 
@@ -78,6 +96,7 @@ elif test -d "$PETSC_DIR//lib/petsc-conf"; then
     AC_MSG_RESULT(no)
     m4_default([$3], [AC_MSG_ERROR([Could not find file with PETSc configuration settings; check PETSC_DIR//lib/petsc-conf])])
   fi
+# 
 # PREVIOUS CONFIG setup (conf)
 # build
 elif test -d "$PETSC_DIR/$PETSC_ARCH/conf"; then
@@ -97,8 +116,9 @@ elif test -d "$PETSC_DIR/conf"; then
     AC_MSG_RESULT(no)
     m4_default([$3], [AC_MSG_ERROR([Could not find file with PETSc configuration settings; check PETSC_DIR/conf])])
   fi
-  # Using conf/variables *should* be obsolete for new config.
-  #cit_petsc_variables="$PETSC_DIR/conf/variables"
+#
+# Using conf/variables *should* be obsolete for new config.
+# cit_petsc_variables="$PETSC_DIR/conf/variables"
 elif test -d "$PESC_DIR/bmake/$PETSC_ARCH"; then
     # old config layout
     cit_petsc_petscconf="$PETSC_DIR/bmake/$PETSC_ARCH/petscconf"
