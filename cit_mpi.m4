@@ -321,7 +321,7 @@ AC_LANG_CASE(
     ],
     [C++], [
         CIT_MPI_CHECK_CXX_LINK(cit_MPI_CPPFLAGS, [],
-                               _CIT_TRIVIAL_MPI_PROGRAM,
+                               [_CIT_TRIVIAL_MPI_PROGRAM],
                                [whether we can link a trivial C++ MPI program],
                                [],
                                AC_MSG_FAILURE([cannot link a trivial C++ MPI program using $CXX]))
@@ -337,7 +337,7 @@ AC_DEFUN([CIT_MPI_CHECK_CXX_LINK], [
 # $Id$
 AC_LANG_ASSERT(C++)
 AC_MSG_CHECKING($4)
-CIT_MPI_CXX_LINK_IFELSE(cit_arg, $$1, $2, $3,
+CIT_MPI_CXX_LINK_IFELSE(cit_arg, $$1, [$2], [$3],
 [
     if test -z "$cit_arg"; then
 	AC_MSG_RESULT(yes)
