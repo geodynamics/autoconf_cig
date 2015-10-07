@@ -287,11 +287,11 @@ AC_DEFUN([_CIT_LINK_PETSC_IFELSE], [
 AC_LANG_CASE(
     [C++], [
         AC_MSG_CHECKING([for PetscInitialize])
-        AC_LINK_IFELSE(_CIT_CHECK_LIB_PETSC_PROGRAM([]), [
+        AC_LINK_IFELSE([_CIT_CHECK_LIB_PETSC_PROGRAM([])], [
                 AC_MSG_RESULT([yes (C++)])
                 $1
         ], [
-            AC_LINK_IFELSE(_CIT_CHECK_LIB_PETSC_PROGRAM([extern "C"]), [
+            AC_LINK_IFELSE([_CIT_CHECK_LIB_PETSC_PROGRAM([extern "C"])], [
                 AC_MSG_RESULT([yes (C)])
                 $1
             ], [
@@ -370,7 +370,7 @@ AC_TRY_COMPILE([
 AC_LANG_CASE([C++], [
     LIBS="$PETSC_LIB $PETSC_CXX_LIB $LIBS"
     CIT_MPI_CHECK_CXX_LINK(PETSC_CXX_INCLUDE, [$PETSC_LIB],
-                           _CIT_TRIVIAL_PETSC_PROGRAM,
+                           [_CIT_TRIVIAL_PETSC_PROGRAM],
                            [whether we can link a trivial C++ PETSc program],
                            [],
 			   AC_MSG_FAILURE([cannot link a trivial C++ PETSc program using $CXX]))
