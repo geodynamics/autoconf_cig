@@ -9,6 +9,7 @@
 # ----------------------------------------------------------------------
 AC_DEFUN([CIT_HDF5_HEADER], [
   AC_LANG(C++)
+  AC_REQUIRE_CPP
   AC_CHECK_HEADER([hdf5.h], [], [
     AC_MSG_ERROR([HDF5 header not found; try CPPFLAGS="-I<hdf5 include dir>"])
   ])dnl
