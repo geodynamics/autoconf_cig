@@ -10,6 +10,7 @@
 # ----------------------------------------------------------------------
 AC_DEFUN([CIT_NETCDF_HEADER], [
   AC_LANG(C++)
+  AC_REQUIRE_CPP
   AC_CHECK_HEADER([netcdfcpp.h], [], [
     AC_MSG_ERROR([netcdf C++ header not found; try CPPFLAGS="-I<netcdf include dir>"])
   ])dnl

@@ -10,6 +10,7 @@
 # ----------------------------------------------------------------------
 AC_DEFUN([CIT_CPPUNIT_HEADER], [
   AC_LANG(C++)
+  AC_REQUIRE_CPP
   AC_CHECK_HEADER([cppunit/TestRunner.h], [], [
     AC_MSG_ERROR([CppUnit header not found; try CPPFLAGS="-I<CppUnit include dir>"])
   ])dnl
@@ -21,8 +22,8 @@ AC_DEFUN([CIT_CPPUNIT_HEADER], [
 # ----------------------------------------------------------------------
 AC_DEFUN([CIT_CPPUNIT_LIB], [
   AC_LANG(C++)
-  AC_MSG_CHECKING([for CppUnit::TestRunner in -lcppunit])
   AC_REQUIRE_CPP
+  AC_MSG_CHECKING([for CppUnit::TestRunner in -lcppunit])
   AC_COMPILE_IFELSE(
     [AC_LANG_PROGRAM([[#include <cppunit/TestRunner.h>]],
 	             [[CppUnit::TestRunner runner;]])],
