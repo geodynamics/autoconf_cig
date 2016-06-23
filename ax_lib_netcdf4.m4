@@ -228,7 +228,7 @@ parallel NetCDF4 is not supported (while it was requested)
         CC=$ax_lib_netcdf4_save_CC
         CFLAGS=$ax_lib_netcdf4_save_CFLAGS
         LIBS=$ax_lib_netcdf4_save_LIBS
-        LDFLAGS=$ax_lib_hdf5_save_LDFLAGS
+        LDFLAGS=$ax_lib_netcdf4_save_LDFLAGS
 
 
         AC_MSG_CHECKING([for matching NetCDF4 Fortran libraries])
@@ -271,6 +271,7 @@ parallel NetCDF4 is not supported (while it was requested)
         AC_SUBST([NETCDF4_FC])
         AC_SUBST([NETCDF4_FFLAGS])
         AC_SUBST([NETCDF4_FLIBS])
+	AC_DEFINE([NETCDF4_VERSION], [$NETCDF4_VERSION], [Define NETCDF4 version])
         AC_DEFINE([HAVE_NETCDF4], [1], [Defined if you have NETCDF4 support])
     fi
 fi
