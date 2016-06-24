@@ -271,7 +271,7 @@ parallel NetCDF4 is not supported (while it was requested)
         AC_SUBST([NETCDF4_FC])
         AC_SUBST([NETCDF4_FFLAGS])
         AC_SUBST([NETCDF4_FLIBS])
-	AC_DEFINE([NETCDF4_VERSION], [$NETCDF4_VERSION], [Define NETCDF4 version])
+	AC_DEFINE_UNQUOTED([NETCDF4_VERSION], ["$NETCDF4_VERSION"], [Define NETCDF4 version])
         AC_DEFINE([HAVE_NETCDF4], [1], [Defined if you have NETCDF4 support])
     fi
 fi
