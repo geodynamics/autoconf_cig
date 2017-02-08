@@ -27,6 +27,7 @@
 # LAST MODIFICATION
 #
 #   2010-07-17 (Brad Aagaard, permit newer major and minor versions than required)
+#   2017-08-17 (Brad Aagaard, add optional argument with maximum version allowed)
 #
 # COPYLEFT
 #
@@ -71,21 +72,40 @@ AC_DEFUN([AC_PROG_SWIG],[
                 [swig_version=`$SWIG -version 2>&1 | grep 'SWIG Version' | sed 's/.*\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/g'`]
                 AC_MSG_RESULT([$swig_version])
                 if test -n "$swig_version" ; then
-                        # Calculate the required version number components
-                        [required=$1]
-                        [required_major=`echo $required | sed 's/[^0-9].*//'`]
-                        if test -z "$required_major" ; then
-                                [required_major=0]
+                        # Calculate the minimum version number components
+                        [minversion=$1]
+                        [minversion_major=`echo $minversion | sed 's/[^0-9].*//'`]
+                        if test -z "$minversion_major" ; then
+                                [minversion_major=0]
                         fi
-                        [required=`echo $required | sed 's/[0-9]*[^0-9]//'`]
-                        [required_minor=`echo $required | sed 's/[^0-9].*//'`]
-                        if test -z "$required_minor" ; then
-                                [required_minor=0]
+                        [minversion=`echo $minversion | sed 's/[0-9]*[^0-9]//'`]
+                        [minversion_minor=`echo $minversion | sed 's/[^0-9].*//'`]
+                        if test -z "$minversion_minor" ; then
+                                [minversion_minor=0]
                         fi
-                        [required=`echo $required | sed 's/[0-9]*[^0-9]//'`]
-                        [required_patch=`echo $required | sed 's/[^0-9].*//'`]
-                        if test -z "$required_patch" ; then
-                                [required_patch=0]
+                        [minversion=`echo $minversion | sed 's/[0-9]*[^0-9]//'`]
+                        [minversion_patch=`echo $minversion | sed 's/[^0-9].*//'`]
+                        if test -z "$minversion_patch" ; then
+                                [minversion_patch=0]
+                        fi
+
+                        # Calculate the maximum version number components
+			if test -n "$2" ; then
+			    [maxversion=$2]
+                            [maxversion_major=`echo $maxversion | sed 's/[^0-9].*//'`]
+                            if test -z "$maxversion_major" ; then
+                                [maxversion_major=0]
+                            fi
+                            [maxversion=`echo $maxversion | sed 's/[0-9]*[^0-9]//'`]
+                            [maxversion_minor=`echo $maxversion | sed 's/[^0-9].*//'`]
+                            if test -z "$maxversion_minor" ; then
+                                [maxversion_minor=0]
+                            fi
+                            [maxversion=`echo $maxversion | sed 's/[0-9]*[^0-9]//'`]
+                            [maxversion_patch=`echo $maxversion | sed 's/[^0-9].*//'`]
+                            if test -z "$maxversion_patch" ; then
+                                [maxversion_patch=0]
+                            fi
                         fi
                         # Calculate the available version number components
                         [available=$swig_version]
@@ -103,15 +123,26 @@ AC_DEFUN([AC_PROG_SWIG],[
                         if test -z "$available_patch" ; then
                                 [available_patch=0]
                         fi
-                        if test $available_major -lt $required_major ; then
+                        if test $available_major -lt $minversion_major ; then
                                 AC_MSG_FAILURE([SWIG version >= $1 is required.  You have $swig_version.  Go to http://www.swig.org to get the current version.])
                                 SWIG='echo "Error: SWIG version >= $1 is required.  You have '"$swig_version"'.  Go to http://www.swig.org to get the current version." ; false'
-                        elif test $available_major -eq $required_major -a $available_minor -lt $required_minor ; then
+                        elif test $available_major -eq $minversion_major -a $available_minor -lt $minversion_minor ; then
                                 AC_MSG_FAILURE([SWIG version >= $1 is required.  You have $swig_version.  Go to http://www.swig.org to get the current version.])
                                 SWIG='echo "Error: SWIG version >= $1 is required.  You have '"$swig_version"'.  Go to http://www.swig.org to get the current version." ; false'
-                        elif test $available_major -eq $required_major -a $available_minor -eq $required_minor -a $available_patch -lt $required_patch ; then
+                        elif test $available_major -eq $minversion_major -a $available_minor -eq $minversion_minor -a $available_patch -lt $minversion_patch ; then
                                 AC_MSG_FAILURE([SWIG version >= $1 is required.  You have $swig_version.  Go to http://www.swig.org to get the current version.])
                                 SWIG='echo "Error: SWIG version >= $1 is required.  You have '"$swig_version"'.  Go to http://www.swig.org to get the current version." ; false'
+                        elif test -n "$maxversion" ; then
+                            if test $available_major -gt $maxversion_major ; then
+                                AC_MSG_FAILURE([SWIG version <= $2 is required.  You have $swig_version.  Go to http://www.swig.org to get an earlier version.])
+                                SWIG='echo "Error: SWIG version <= $2 is required.  You have '"$swig_version"'.  Go to http://www.swig.org to get an earlier version." ; false'
+                            elif test $available_major -eq $maxversion_major -a $available_minor -gt $maxversion_minor ; then
+                                AC_MSG_FAILURE([SWIG version <= $2 is required.  You have $swig_version.  Go to http://www.swig.org to get the current version.])
+                                SWIG='echo "Error: SWIG version <= $2 is required.  You have '"$swig_version"'.  Go to http://www.swig.org to get the current version." ; false'
+                            elif test $available_major -eq $maxversion_major -a $available_minor -eq $maxversion_minor -a $available_patch -gt $maxversion_patch ; then
+                                AC_MSG_FAILURE([SWIG version <= $2 is required.  You have $swig_version.  Go to http://www.swig.org to get an earlier version.])
+                                SWIG='echo "Error: SWIG version <= $2 is required.  You have '"$swig_version"'.  Go to http://www.swig.org to get an earlier version." ; false'
+                            fi
                         else
                                 AC_MSG_NOTICE([SWIG executable is '$SWIG'])
                                 SWIG_LIB=`$SWIG -swiglib`
