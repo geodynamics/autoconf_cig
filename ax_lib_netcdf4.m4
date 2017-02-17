@@ -211,6 +211,7 @@ parallel NetCDF4 is not supported (while it was requested)
         dnl See if we can compile
         ax_lib_netcdf4_save_CC=$CC
         ax_lib_netcdf4_save_CPPFLAGS=$CPPFLAGS
+        ax_lib_netcdf4_save_CFLAGS=$CFLAGS
         ax_lib_netcdf4_save_LIBS=$LIBS
         ax_lib_netcdf4_save_LDFLAGS=$LDFLAGS
         CC=$NETCDF4_CC
