@@ -81,8 +81,15 @@ AC_DEFUN([CIT_PATH_VTK],[
     if test x$with_vtk != "xno"; then
         VTK_PREFIX="$with_vtk"
 
-        AC_CHECK_FILE([$VTK_PREFIX/include/vtk$vtk_suffix/vtkCommonInstantiator.h],
-                      [vtkFound="OK"])
+        # note: for VTK version 7.0 the file vtkCommonInstantiator.h no longer exists,
+        #       but has been renamed to vtkInstantiator.h instead
+        #AC_CHECK_FILE([$VTK_PREFIX/include/vtk$vtk_suffix/vtkCommonInstantiator.h],
+        #              [vtkFound="OK"])
+
+        # checks for common file: vtkVersion.h
+        AC_CHECK_FILE([$VTK_PREFIX/include/vtk$vtk_suffix/vtkVersion.h],
+                                    [vtkFound="OK"])
+
         AC_MSG_CHECKING([if VTK is installed in $VTK_PREFIX])
 
         if test -z "$vtkFound"; then
@@ -96,10 +103,6 @@ AC_DEFUN([CIT_PATH_VTK],[
             dnl VTK found!
             AC_MSG_RESULT([yes])
 
-            dnl set VTK flags
-            VTK_INCLUDES="-I$VTK_PREFIX/include/vtk$vtk_suffix"
-            VTK_LDFLAGS="-L$VTK_PREFIX/lib/vtk$vtk_suffix -L$VTK_PREFIX/lib64/vtk$vtk_suffix"
-
             dnl remember the old flags
             AC_LANG_PUSH([C])
             OLD_CFLAGS=$CFLAGS
@@ -107,29 +110,122 @@ AC_DEFUN([CIT_PATH_VTK],[
             OLD_LDFLAGS=$LDFLAGS
             OLD_LIBS=$LIBS
 
+            dnl these are the VTK libraries of a default build.
+            dnl figure out vtkCommon, vtkIO, vtkFiltering, plus dependencies (in case VTK libs are static)
+            dnl order of libs is significant
+
+            dnl set VTK flags
+            VTK_INCLUDES="-I$VTK_PREFIX/include/vtk$vtk_suffix"
+
+            # note: versions 6+ change library names
+            maj=`echo $vtk_version | sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
+            VTK_MAJOR=$maj
+            AC_MSG_NOTICE([VTK version $vtk_version - major version number is $VTK_MAJOR])
+            VTK_LDFLAGS=""
+            if test -d "$VTK_PREFIX/lib/vtk$vtk_suffix" ; then VTK_LDFLAGS+="-L$VTK_PREFIX/lib/vtk$vtk_suffix "; fi
+            if test -d "$VTK_PREFIX/lib64/vtk$vtk_suffix" ; then VTK_LDFLAGS+="-L$VTK_PREFIX/lib64/vtk$vtk_suffix "; fi
+            if test "${VTK_MAJOR}" -gt "5" ; then
+              # for vtk versions 6+
+              if test -d "$VTK_PREFIX/lib" ; then VTK_LDFLAGS+="-L$VTK_PREFIX/lib "; fi
+            fi
+
             dnl in order to be able to compile the following test programs,
             dnl we need to add to our VTK settings to the current flags
             CFLAGS="$VTK_CFLAGS $CFLAGS"
             CXXFLAGS="$VTK_CXXFLAGS $CXXFLAGS"
             LDFLAGS="$VTK_LDFLAGS $LDFLAGS"
+            AC_MSG_NOTICE([checking with linker flags $LDFLAGS])
 
-            dnl these are the VTK libraries of a default build.
-            dnl figure out vtkCommon, vtkIO, vtkFiltering, plus dependencies (in case VTK libs are static)
-            dnl order of libs is significant
-            VTK_SUPPORT_LIBS="-lvtktiff -lvtkpng -lvtkjpeg -lvtkzlib -lvtkexpat -lvfw32 -lgdi32"
-            AC_CHECK_LIB(vtkIO, strcmp, [], [
-                VTK_SUPPORT_LIBS="-lvtktiff -lvtkpng -lvtkjpeg -lvtkzlib -lvtkexpat"
-                AC_CHECK_LIB(vtkIO, abort, [], [
+            # tests common vtkIO library
+            if test "${VTK_MAJOR}" -gt "5" ; then
+              # for vtk versions 6+
+              lib_vtkIO=vtkIOCore$vtk_suffix
+            else
+              # for vtk versions <= 5
+              lib_vtkIO=vtkIO
+            fi
+            AC_MSG_NOTICE([checking VTK library file: -l$lib_vtkIO])
+            found_vtk_lib=no
+            AC_CHECK_LIB($lib_vtkIO, main, [found_vtk_lib=yes],
+              [if test "x$VTK_LIBS" != "x" ; then
+                LIBS="$LIBS -L$VTK_LIBS"
+                AC_MSG_NOTICE([  ... with LIBS: $LIBS])
+                AC_CHECK_LIB($lib_vtkIO, main, [found_vtk_lib=yes],
+                [ if test "${VTK_MAJOR}" -gt "5" ; then
+                    # checks name without suffix
+                    vtk_suffix=""
+                    lib_vtkIO=vtkIOCore$vtk_suffix
+                    AC_CHECK_LIB($lib_vtkIO, main, [found_vtk_lib=yes],[])
+                  fi
+                ])
+               fi
+            ])
+            if test "$found_vtk_lib" != "yes"; then
+              # abort in case not found
+              AC_MSG_ERROR([could not find VTK libraries])
+            fi
+
+            # additional libraries
+            if test "${VTK_MAJOR}" -gt "5" ; then
+              # for vtk versions 6+
+              VTK_SUPPORT_LIBS="-lvtktiff$vtk_suffix -lvtkpng$vtk_suffix -lvtkjpeg$vtk_suffix -lvtkzlib$vtk_suffix -lvtkexpat$vtk_suffix -lvfw32 -lgdi32"
+            else
+              # for vtk versions <= 5
+              VTK_SUPPORT_LIBS="-lvtktiff -lvtkpng -lvtkjpeg -lvtkzlib -lvtkexpat -lvfw32 -lgdi32"
+            fi
+            if test "${VTK_MAJOR}" -gt "5" ; then
+              # version 6+
+              AC_CHECK_LIB(vtkIOXML$vtk_suffix, main)
+              AC_CHECK_LIB(vtkIOImage$vtk_suffix, main)
+              AC_CHECK_LIB(vtkDICOMParser$vtk_suffix, main)
+              AC_CHECK_LIB(vtkRenderingCore$vtk_suffix, main)
+              AC_CHECK_LIB(vtkRenderingLabel$vtk_suffix, main)
+              AC_CHECK_LIB(vtkRenderingAnnotation$vtk_suffix, main)
+              AC_CHECK_LIB(vtkFiltersCore$vtk_suffix, main)
+              AC_CHECK_LIB(vtkFiltersGeneric$vtk_suffix, main)
+              AC_CHECK_LIB(vtkCommonCore$vtk_suffix, main)
+              AC_CHECK_LIB(vtkInteractionStyle$vtk_suffix, main)
+              AC_CHECK_LIB(vtkzlib$vtk_suffix, main)
+              AC_CHECK_LIB(vtkexpat$vtk_suffix, main)
+              AC_CHECK_LIB(vtksys$vtk_suffix, main)
+            else
+              # version <= 5
+              AC_CHECK_LIB(vtkDICOMParser, main)
+              AC_CHECK_LIB(vtkRendering, main)
+              AC_CHECK_LIB(vtkGraphics, main)
+              AC_CHECK_LIB(vtkFiltering, main)
+              AC_CHECK_LIB(vtkGenericFiltering, main)
+              AC_CHECK_LIB(vtkCommon, main)
+              AC_CHECK_LIB(vtkzlib, main)
+              AC_CHECK_LIB(vtkexpat, main)
+              AC_CHECK_LIB(vtksys, main)
+            fi
+            AC_MSG_NOTICE([checking VTK library features in $lib_vtkIO])
+            AC_CHECK_LIB($lib_vtkIO, strcmp, [], [
+                # version check
+                if test "${VTK_MAJOR}" -gt "5" ; then
+                  # version 6+
+                  VTK_SUPPORT_LIBS="-lvtktiff$vtk_suffix -lvtkpng$vtk_suffix -lvtkjpeg$vtk_suffix -lvtkzlib$vtk_suffix -lvtkexpat$vtk_suffix"
+                else
+                  # version <= 5
+                  VTK_SUPPORT_LIBS="-lvtktiff -lvtkpng -lvtkjpeg -lvtkzlib -lvtkexpat"
+                fi
+                AC_CHECK_LIB($lib_vtkIO, abort, [], [
                     VTK_SUPPORT_LIBS="-ltiff -lpng -ljpeg -lz -lexpat"
-                    AC_CHECK_LIB(vtkIO, exit, [], [
+                    AC_CHECK_LIB($lib_vtkIO, exit, [], [
                         VTK_SUPPORT_LIBS=""
-                        AC_CHECK_LIB(vtkIO, strstr, [], [
+                        AC_CHECK_LIB($lib_vtkIO, strstr, [], [
                             AC_MSG_ERROR([cannot link against VTK libraries])
                         ], [$VTK_SUPPORT_LIBS])
                     ], [$VTK_SUPPORT_LIBS])
                 ], [$VTK_SUPPORT_LIBS])
             ], [$VTK_SUPPORT_LIBS])
-            VTK_LIBS="-lvtkIO -lvtkDICOMParser -lvtkFiltering -lvtkGenericFiltering -lvtkCommon $VTK_SUPPORT_LIBS -lvtksys"
+
+            if test "${VTK_MAJOR}" -gt "5" ; then
+              VTK_LIBS="-l$lib_vtkIO -lvtkIOXML$vtk_suffix -lvtkIOImage$vtk_suffix -lvtkDICOMParser$vtk_suffix -lvtkRenderingCore$vtk_suffix -lvtkRenderingLabel$vtk_suffix -lvtkRenderingAnnotation$vtk_suffix -lvtkFiltersCore$vtk_suffix -lvtkFiltersGeneric$vtk_suffix -lvtkCommonCore$vtk_suffix -lvtkInteractionStyle$vtk_suffix $VTK_SUPPORT_LIBS -lvtksys$vtk_suffix"
+            else
+              VTK_LIBS="-l$lib_vtkIO -lvtkDICOMParser -lvtkRendering -lvtkGraphics -lvtkFiltering -lvtkGenericFiltering -lvtkCommon $VTK_SUPPORT_LIBS -lvtksys"
+            fi
             LIBS="$VTK_LIBS $LIBS"
 
             dnl now, check that we don't exceed the specified version
@@ -205,6 +301,7 @@ AC_DEFUN([CIT_PATH_VTK],[
     fi          # $with_vtk != "no"
 
     dnl Substitute the values of our VTK flags
+    AC_SUBST(VTK_MAJOR)
     AC_SUBST(VTK_INCLUDES)
     AC_SUBST(VTK_LDFLAGS)
     AC_SUBST(VTK_LIBS)
