@@ -37,7 +37,9 @@ AC_MSG_RESULT([$PETSC_DIR])
 
 AC_MSG_CHECKING([for PETSc arch])
 if test -z "$PETSC_ARCH"; then
-    if test -d "$PETSC_DIR/conf"; then
+    if test -d "$PETSC_DIR/lib/petsc/conf"; then
+        AC_MSG_RESULT(no)
+    elif test -d "$PETSC_DIR/conf"; then
         # new config layout; no default config (?)
         AC_MSG_RESULT(no)
         m4_default([$3], [AC_MSG_ERROR([set PETSC_ARCH])])
