@@ -23,7 +23,7 @@ AC_DEFUN([CIT_SPATIALDATA_LIB], [
   AC_LANG(C++)
   AC_REQUIRE_CPP
   AC_MSG_CHECKING([for SimpleDB in -lspatialdata])
-  AC_COMPILE_IFELSE(
+  AC_LINK_IFELSE(
     [AC_LANG_PROGRAM([[#include <spatialdata/spatialdb/SpatialDB.hh>]
                       [#include <spatialdata/spatialdb/SimpleDB.hh>]],
                      [[spatialdata::spatialdb::SimpleDB db;]])],
