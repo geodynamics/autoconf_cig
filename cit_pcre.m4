@@ -2,43 +2,43 @@
 
 
 # ======================================================================
-# Autoconf macros for netcdf.
+# Autoconf macros for pcre.
 # ======================================================================
 
 # ----------------------------------------------------------------------
-# CIT_NETCDF_HEADER
+# CIT_PCRE_HEADER
 # ----------------------------------------------------------------------
-AC_DEFUN([CIT_NETCDF_HEADER], [
+AC_DEFUN([CIT_PCRE_HEADER], [
   cit_save_cppflags=$CPPFLAGS
-  CPPFLAGS="$CPPFLAGS $NETCDF_INCLUDES"
-  AC_LANG(C)
+  CPPFLAGS="$CPPFLAGS $PCRE_INCLUDES"
+  AC_LANG(C++)
   AC_REQUIRE_CPP
-  AC_CHECK_HEADER([netcdf.h], [], [
-    AC_MSG_ERROR([NetCDF header not found; try --with-netcdf-incdir=<NetCDF include dir>])
+  AC_CHECK_HEADER([pcre.h], [], [
+    AC_MSG_ERROR([pcre header not found; try --with-pcre-incdir=<pcre include dir>])
   ])dnl
   CPPFLAGS=$cit_save_cppflags
-])dnl CIT_NETCDF_HEADER
+])dnl CIT_PCRE_HEADER
 
 
 # ----------------------------------------------------------------------
-# CIT_NETCDF_LIB
+# CIT_PCRE_LIB
 # ----------------------------------------------------------------------
-AC_DEFUN([CIT_NETCDF_LIB], [
+AC_DEFUN([CIT_PCRE_LIB], [
   cit_save_cppflags=$CPPFLAGS
   cit_save_ldflags=$LDFLAGS
   cit_save_libs=$LIBS
-  CPPFLAGS="$CPPFLAGS $NETCDF_INCLUDES"
-  LDFLAGS="LDFLAGS $NETCDF_LDFLAGS"
-  AC_LANG(C)
+  CPPFLAGS="$CPPFLAGS $PCRE_INCLUDES"
+  LDFLAGS="$LDFLAGS $PCRE_LDFLAGS"
+  AC_LANG(C++)
   AC_REQUIRE_CPP
-  AC_MSG_CHECKING([for nc_open in -lnetcdf])
-  AC_CHECK_LIB(netcdf, nc_open, [],[
-    AC_MSG_ERROR([NetCDF library not found; try --with-netcdf-libdir=<NetCDF lib dir>])
+  AC_MSG_CHECKING([for real_pcre in -lpcre])
+  AC_CHECK_LIB(pcre, pcre2_compile, [],[
+    AC_MSG_ERROR([pcre library not found; try --with-pcre-libdir=<pcre lib dir>])
   ])dnl
   CPPFLAGS=$cit_save_cppflags
   LDFLAGS=$cit_save_ldflags
   LIBS=$cit_save_libs
-])dnl CIT_NETCDF_LIB
+])dnl CIT_PCRE
 
 
 dnl end of file
