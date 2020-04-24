@@ -20,6 +20,8 @@ AC_DEFUN([CIT_SPATIALDATA_HEADER], [
 # CIT_SPATIALDATA_LIB
 # ----------------------------------------------------------------------
 AC_DEFUN([CIT_SPATIALDATA_LIB], [
+  cit_save_libs=$LIBS
+  LIBS="-lspatialdata"
   AC_LANG(C++)
   AC_REQUIRE_CPP
   AC_MSG_CHECKING([for SimpleDB in -lspatialdata])
@@ -31,6 +33,7 @@ AC_DEFUN([CIT_SPATIALDATA_LIB], [
     [AC_MSG_RESULT(no)
      AC_MSG_ERROR([Spatialdata library not found; try LDFLAGS="-L<Spatialdata lib dir>"])
   ])dnl
+  LIBS=$cit_save_libs
 ])dnl CIT_SPATIALDATA_LIB
 
 
