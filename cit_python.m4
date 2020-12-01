@@ -14,7 +14,7 @@ AC_DEFUN([CIT_PYTHON_INCDIR], [
 AC_REQUIRE([AM_PATH_PYTHON])
 AC_CACHE_CHECK([for $am_display_PYTHON include directory],
     [_cv_PYTHON_INCDIR],
-    [PYTHON_INCDIR=`$PYTHON -c "from distutils import sysconfig; print sysconfig.get_python_inc()" 2>/dev/null ||
+    [PYTHON_INCDIR=`$PYTHON -c "from distutils import sysconfig; print(sysconfig.get_python_inc())" 2>/dev/null ||
      echo "$PYTHON_PREFIX/include/python$PYTHON_VERSION"`])
 AC_SUBST([_cv_PYTHON_INCDIR], [$PYTHON_INCDIR])
 ])dnl CIT_PYTHON_INCDIR
@@ -85,14 +85,14 @@ getvar = sysconfig.get_config_var
 
 cppflags = ['-I' + sysconfig.get_python_inc(),
             '-I' + sysconfig.get_python_inc(plat_specific=True)]
-print 'PYTHON_CPPFLAGS="%s"' % ' '.join(cppflags)
+print('PYTHON_CPPFLAGS="%s"' % ' '.join(cppflags))
 
 ldflags = ['-L' + getvar('LIBDIR'), '-L' + getvar('LIBPL')]
-print 'PYTHON_LDFLAGS="%s"' % ' '.join(ldflags)
+print('PYTHON_LDFLAGS="%s"' % ' '.join(ldflags))
 
 libs = getvar('LIBS').split() + getvar('SYSLIBS').split()
 libs.append('-lpython'+pyver)
-print 'PYTHON_LIBS="%s"' % ' '.join(libs)
+print('PYTHON_LIBS="%s"' % ' '.join(libs))
 
 ]
 END_OF_PYTHON
@@ -190,9 +190,9 @@ else:
         vars['LINKFORSHARED'] = vars['LINKFORSHARED'].replace(framework, "-framework " + PYTHONFRAMEWORK)
         vars['LA_LDFLAGS'] = "-Wl,-framework,%s" % PYTHONFRAMEWORK
 vars['LDFLAGS'] = '' # only causes trouble (e.g., "-arch i386 -arch ppc" on Mac) -- see issue97
-print 'PYTHON_INCDIR="%s"' % incdir
+print('PYTHON_INCDIR="%s"' % incdir)
 for key in keys:
-    print 'PYTHON_%s="%s"' % (key, vars.get(key, ''))
+    print('PYTHON_%s="%s"' % (key, vars.get(key, '')))
 ]
 END_OF_PYTHON
 eval `$PYTHON sysconfig.py 2>/dev/null`
@@ -227,7 +227,7 @@ AC_DEFUN([CIT_PYTHON_SITE], [
 # $Id$
 AC_REQUIRE([AM_PATH_PYTHON])
 AC_MSG_CHECKING([whether we are installing to Python's prefix])
-cit_python_prefix=`$PYTHON -c "import sys; print sys.prefix"`
+cit_python_prefix=`$PYTHON -c "import sys; print(sys.prefix)"`
 if test "$cit_python_prefix" = "$prefix"; then
     AC_MSG_RESULT(yes)
     cit_cond_python_site=true
@@ -236,7 +236,7 @@ else
     cit_cond_python_site=false
 fi
 AC_MSG_CHECKING([whether we are installing to Python's exec prefix])
-cit_python_exec_prefix=`$PYTHON -c "import sys; print sys.exec_prefix"`
+cit_python_exec_prefix=`$PYTHON -c "import sys; print(sys.exec_prefix)"`
 cit_exec_prefix=$exec_prefix
 test "x$cit_exec_prefix" = xNONE && cit_exec_prefix=$prefix
 if test "$cit_python_exec_prefix" = "$cit_exec_prefix"; then
@@ -271,10 +271,10 @@ try:
     from pkg_resources import require
     require("$1")
 except Exception, e:
-    print >>sys.stderr, e
-    print "cit_egg_status=1"
+    sys.stderr.write("%s\n" % e)
+    print("cit_egg_status=1")
 else:
-    print "cit_egg_status=0"
+    print("cit_egg_status=0")
 ]
 END_OF_PYTHON
 
@@ -369,12 +369,12 @@ from getopt import getopt
 from distutils.sysconfig import parse_config_h, parse_makefile, expand_makefile_vars
 
 def printUsage():
-    print "Usage: %s -h HEADER -m MAKEFILE -o OUTPUT" % argv[0]
+    print("Usage: %s -h HEADER -m MAKEFILE -o OUTPUT" % argv[0])
 
 try:
     (opts, args) = getopt(argv[1:], "h:m:o:")
 except GetoptError, error:
-    print "%s: %s" % (argv[0], error)
+    print("%s: %s" % (argv[0], error))
     printUsage()
     exit(1)
 
@@ -401,15 +401,11 @@ keys = makefile_vars.keys()
 for key in keys:
     makefile_vars[key] = expand_makefile_vars(makefile_vars[key], makefile_vars)
 
-f = open(output, 'w')
-print >>f, "#!/usr/bin/env python"
-print >>f
-print >>f, "config =", config_vars
-print >>f
-print >>f, "makefile =", makefile_vars
-print >>f
-print >>f, "# end of file"
-f.close()
+with open(output, 'w') as f:
+     f.write("#!/usr/bin/env python\n\n")
+     f.write("config = %s\n\n\n" % config_vars)
+     f.write("makefile = %s\n\n" % makefile_vars)
+     f.write("# end of file\n")
 
 # end of file]
 END_OF_PYTHON
@@ -438,14 +434,14 @@ AC_REQUIRE([AM_PATH_PYTHON])
 AC_MSG_CHECKING(for python module $1)
 $PYTHON -c "import $1" 2>/dev/null
 if test $? == 0; then
-  eval s=`$PYTHON -c "import $1; print $1.__""file__"`
+  eval s=`$PYTHON -c "import $1; print($1.__""file__)"`
   AC_MSG_RESULT([found $s])
 else
   AC_MSG_FAILURE(not found)
 fi
 if test -n "$2" ; then
   AC_MSG_CHECKING([for $1 version])
-  [eval `$PYTHON -c "import $1; print $1.__version__" | sed 's/\([0-9]\{1,\}\)\.\([0-9]\{1,\}\)\.\([0-9]\{1,\}\)/avail_major=\1; avail_minor=\2; avail_patch=\3/'`]
+  [eval `$PYTHON -c "import $1; print($1.__version__)" | sed 's/\([0-9]\{1,\}\)\.\([0-9]\{1,\}\)\.\([0-9]\{1,\}\)/avail_major=\1; avail_minor=\2; avail_patch=\3/'`]
   [eval `echo $2 | sed 's/\([0-9]\{1,\}\)\.\([0-9]\{1,\}\)\.\([0-9]\{1,\}\)/req_major=\1; req_minor=\2; req_patch=\3/' 2>/dev/null`]
   if test -n "$avail_major" -a -n "$avail_minor" -a -n "$avail_patch"; then
     if test $avail_major -lt $req_major ; then
