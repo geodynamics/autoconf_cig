@@ -14,9 +14,9 @@ AC_DEFUN([CIT_PYTHON_INCDIR], [
 AC_REQUIRE([AM_PATH_PYTHON])
 AC_CACHE_CHECK([for $am_display_PYTHON include directory],
     [_cv_PYTHON_INCDIR],
-    [PYTHON_INCDIR=`$PYTHON -c "from distutils import sysconfig; print(sysconfig.get_python_inc())" 2>/dev/null ||
+    [_cv_PYTHON_INCDIR=`$PYTHON -c "from distutils import sysconfig; print(sysconfig.get_python_inc())" 2>/dev/null ||
      echo "$PYTHON_PREFIX/include/python$PYTHON_VERSION"`])
-AC_SUBST([_cv_PYTHON_INCDIR], [$PYTHON_INCDIR])
+AC_SUBST([PYTHON_INCDIR], [$_cv_PYTHON_INCDIR])
 ])dnl CIT_PYTHON_INCDIR
 
 
