@@ -52,7 +52,7 @@ if test -z "$PETSC_ARCH"; then
 [from distutils.sysconfig import parse_makefile
 
 vars = parse_makefile('$PETSC_DIR/bmake/petscconf')
-print 'PETSC_ARCH="%s"' % vars['PETSC_ARCH']
+print('PETSC_ARCH="%s"' % vars['PETSC_ARCH'])
 
 ]
 END_OF_PYTHON
@@ -179,9 +179,9 @@ for key in keys:
             # Libtool strips the former.  (Does it ever work?)
             value = value.replace("/System/Library/Frameworks/vecLib.framework/vecLib",
                                   "-Wl,-framework,vecLib")
-        print '%s="%s"' % (key, value)
+        print('%s="%s"' % (key, value))
     else:
-        print 'PETSC_%s="%s"' % (key, expand_makefile_vars(str(vars.get(key, '')), vars))
+        print('PETSC_%s="%s"' % (key, expand_makefile_vars(str(vars.get(key, '')), vars)))
 
 ]
 END_OF_PYTHON
