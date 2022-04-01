@@ -118,7 +118,7 @@ AC_DEFUN([CIT_PYTHON_SYSCONFIG], [
 # $Id$
 AC_REQUIRE([AM_PATH_PYTHON])
 AC_MSG_CHECKING([$am_display_PYTHON sysconfig])
-cat >sysconfig.py <<END_OF_PYTHON
+cat >local_sysconfig.py <<END_OF_PYTHON
 [import os, sys
 from distutils import sysconfig
 def cygpath(wpath):
@@ -195,16 +195,16 @@ for key in keys:
     print('PYTHON_%s="%s"' % (key, vars.get(key, '')))
 ]
 END_OF_PYTHON
-eval `$PYTHON sysconfig.py 2>/dev/null`
+eval `$PYTHON local_sysconfig.py 2>/dev/null`
 if test -n "$PYTHON_INCDIR"; then
     AC_MSG_RESULT(ok)
 else
     AC_MSG_ERROR(["failed
 
-Run '$PYTHON sysconfig.py' to see what went wrong.
+Run '$PYTHON local_sysconfig.py' to see what went wrong.
 "])
 fi
-rm -f sysconfig.py sysconfig.pyc
+rm -f local_sysconfig.py 
 AC_SUBST([PYTHON_INCDIR], [$PYTHON_INCDIR])
 AC_SUBST([PYTHON_BLDLIBRARY], [$PYTHON_BLDLIBRARY])
 AC_SUBST([PYTHON_LDFLAGS], [$PYTHON_LDFLAGS])
