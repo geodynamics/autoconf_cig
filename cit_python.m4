@@ -14,7 +14,7 @@ AC_DEFUN([CIT_PYTHON_INCDIR], [
 AC_REQUIRE([AM_PATH_PYTHON])
 AC_CACHE_CHECK([for $am_display_PYTHON include directory],
     [_cv_PYTHON_INCDIR],
-    [_cv_PYTHON_INCDIR=`$PYTHON -c "from distutils import sysconfig; print(sysconfig.get_python_inc())" 2>/dev/null ||
+    [_cv_PYTHON_INCDIR=`$PYTHON -c "import sysconfig; print(sysconfig.get_path('include'))" 2>/dev/null ||
      echo "$PYTHON_PREFIX/include/python$PYTHON_VERSION"`])
 AC_SUBST([PYTHON_INCDIR], [$_cv_PYTHON_INCDIR])
 ])dnl CIT_PYTHON_INCDIR
@@ -78,13 +78,12 @@ cat >python-config.py <<END_OF_PYTHON
 [
 # This is based upon the pythonX.X-config utility that ships with
 # Python 2.4 and later.
-from distutils import sysconfig
+import sysconfig
 
 pyver = sysconfig.get_config_var('VERSION')
 getvar = sysconfig.get_config_var
 
-cppflags = ['-I' + sysconfig.get_python_inc(),
-            '-I' + sysconfig.get_python_inc(plat_specific=True)]
+cppflags = ['-I' + sysconfig.get_path('include')]
 print('PYTHON_CPPFLAGS="%s"' % ' '.join(cppflags))
 
 ldflags = ['-L' + getvar('LIBDIR'), '-L' + getvar('LIBPL')]
@@ -120,13 +119,13 @@ AC_REQUIRE([AM_PATH_PYTHON])
 AC_MSG_CHECKING([$am_display_PYTHON sysconfig])
 cat >local_sysconfig.py <<END_OF_PYTHON
 [import os, sys
-from distutils import sysconfig
+import sysconfig
 def cygpath(wpath):
     s = os.popen('cygpath -u "%s"' % wpath)
     path = s.read().strip()
     s.close()
     return path
-incdir = sysconfig.get_python_inc()
+incdir = sysconfig.get_path("include")
 keys = (
     'BLDLIBRARY',
     'LDFLAGS',
