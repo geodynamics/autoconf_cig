@@ -49,7 +49,7 @@ if test -z "$PETSC_ARCH"; then
         m4_default([$3], [AC_MSG_ERROR([PETSc file $PETSC_DIR/bmake/petscconf not found; check PETSC_DIR])])
     else
         cat >petsc.py <<END_OF_PYTHON
-[from distutils.sysconfig import parse_makefile
+[import setuptools; from distutils.sysconfig import parse_makefile
 
 vars = parse_makefile('$PETSC_DIR/bmake/petscconf')
 print('PETSC_ARCH="%s"' % vars['PETSC_ARCH'])
@@ -144,7 +144,7 @@ echo "PETSC_DIR = $PETSC_DIR" > petscconf
 echo "PETSC_ARCH = $PETSC_ARCH" >> petscconf
 cat $cit_petsc_petscconf $cit_petsc_variables >> petscconf
 cat >petsc.py <<END_OF_PYTHON
-[from distutils.sysconfig import parse_config_h, parse_makefile, expand_makefile_vars
+[import setuptools; from distutils.sysconfig import parse_config_h, parse_makefile, expand_makefile_vars
 
 f = open('$PETSC_DIR/include/petscversion.h')
 vars = parse_config_h(f)
