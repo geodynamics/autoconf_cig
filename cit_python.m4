@@ -8,7 +8,7 @@
 
 # CIT_PYTHON_INCDIR
 # -----------------
-# Determine the directory containing <Python.h> using distutils.
+# Determine the directory containing <Python.h> using sysconfig.
 AC_DEFUN([CIT_PYTHON_INCDIR], [
 # $Id$
 AC_REQUIRE([AM_PATH_PYTHON])
@@ -367,7 +367,7 @@ cat >"$cfgfile" <<END_OF_PYTHON
 from getopt import getopt, GetoptError
 from sys import argv, exit
 from getopt import getopt
-from distutils.sysconfig import parse_config_h, parse_makefile, expand_makefile_vars
+import setuptools; from distutils.sysconfig import parse_config_h, parse_makefile, expand_makefile_vars
 
 def printUsage():
     print("Usage: %s -h HEADER -m MAKEFILE -o OUTPUT" % argv[0])
