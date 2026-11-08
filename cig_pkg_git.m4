@@ -11,7 +11,7 @@ AC_DEFUN([CIG_PKG_GIT], [
 pushd $srcdir > /dev/null
 AC_CHECK_FILE([.git/config], [[
 $1_RELEASE_VERSION=0
-eval $1_GIT_REVISION=`git describe`
+eval $1_GIT_REVISION=`git describe || echo version-unknown`
 eval $1_GIT_HASH=`git log -1 --pretty=format:%H`
 eval $1_GIT_DATE=\"`git log -1 --pretty=format:%ci`\"
 eval $1_GIT_BRANCH=`git rev-parse --abbrev-ref HEAD`
